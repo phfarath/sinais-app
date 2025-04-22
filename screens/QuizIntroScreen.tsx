@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ViewStyle, TextStyle, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -15,6 +15,7 @@ type QuizIntroScreenProps = {
 
 interface Styles {
   container: ViewStyle;
+  scrollContent: ViewStyle;
   header: ViewStyle;
   title: TextStyle;
   subtitle: TextStyle;
@@ -32,43 +33,45 @@ export default function QuizIntroScreen({ navigation }: QuizIntroScreenProps) {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
-        <MaterialCommunityIcons name="clipboard-check-outline" size={60} color="#4A90E2" />
-        <Text style={styles.title}>Avaliação Inicial</Text>
-        <Text style={styles.subtitle}>
-          Vamos fazer algumas perguntas para entender melhor seu perfil
-        </Text>
-      </View>
-
-      <View style={styles.infoContainer}>
-        <View style={styles.infoItem}>
-          <MaterialCommunityIcons name="clock-outline" size={24} color="#4A90E2" />
-          <Text style={styles.infoText}>Leva apenas 2 minutos</Text>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.header}>
+          <MaterialCommunityIcons name="clipboard-check-outline" size={60} color="#4A90E2" />
+          <Text style={styles.title}>Avaliação Inicial</Text>
+          <Text style={styles.subtitle}>
+            Vamos fazer algumas perguntas para entender melhor seu perfil
+          </Text>
         </View>
-        <View style={styles.infoItem}>
-          <MaterialCommunityIcons name="shield-check-outline" size={24} color="#4A90E2" />
-          <Text style={styles.infoText}>Totalmente confidencial</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <MaterialCommunityIcons name="chart-box-outline" size={24} color="#4A90E2" />
-          <Text style={styles.infoText}>Resultado personalizado</Text>
-        </View>
-      </View>
 
-      <TouchableOpacity 
-        style={styles.button}
-        onPress={() => navigation.navigate('Quiz')}
-      >
-        <Text style={styles.buttonText}>Começar Avaliação</Text>
-        <MaterialCommunityIcons name="arrow-right" size={24} color="white" />
-      </TouchableOpacity>
+        <View style={styles.infoContainer}>
+          <View style={styles.infoItem}>
+            <MaterialCommunityIcons name="clock-outline" size={24} color="#4A90E2" />
+            <Text style={styles.infoText}>Leva apenas 2 minutos</Text>
+          </View>
+          <View style={styles.infoItem}>
+            <MaterialCommunityIcons name="shield-check-outline" size={24} color="#4A90E2" />
+            <Text style={styles.infoText}>Totalmente confidencial</Text>
+          </View>
+          <View style={styles.infoItem}>
+            <MaterialCommunityIcons name="chart-box-outline" size={24} color="#4A90E2" />
+            <Text style={styles.infoText}>Resultado personalizado</Text>
+          </View>
+        </View>
 
-      <TouchableOpacity 
-        style={styles.skipButton}
-        onPress={() => navigation.navigate('Dashboard')}
-      >
-        <Text style={styles.skipText}>Pular por enquanto</Text>
-      </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.button}
+          onPress={() => navigation.navigate('Quiz')}
+        >
+          <Text style={styles.buttonText}>Começar Avaliação</Text>
+          <MaterialCommunityIcons name="arrow-right" size={24} color="white" />
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.skipButton}
+          onPress={() => navigation.navigate('Dashboard')}
+        >
+          <Text style={styles.skipText}>Pular por enquanto</Text>
+        </TouchableOpacity>
+      </ScrollView>
     </View>
   );
 }
@@ -76,7 +79,10 @@ export default function QuizIntroScreen({ navigation }: QuizIntroScreenProps) {
 const styles = StyleSheet.create<Styles>({
   container: {
     flex: 1,
-    backgroundColor: '#F5F8FF',
+    backgroundColor: '#F8FAFC',
+  },
+  scrollContent: {
+    flexGrow: 1,
     padding: 20,
   },
   header: {
@@ -86,58 +92,59 @@ const styles = StyleSheet.create<Styles>({
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
-    color: '#1F2937',
+    fontWeight: 'bold',
+    color: '#1E293B',
     marginTop: 16,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6B7280',
+    color: '#64748B',
     textAlign: 'center',
     maxWidth: '80%',
   },
   infoContainer: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 24,
-    gap: 20,
     marginBottom: 40,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
   },
   infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   infoText: {
     fontSize: 16,
-    color: '#4B5563',
+    color: '#1E293B',
+    marginLeft: 16,
   },
   button: {
-    backgroundColor: '#4A90E2',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#4A90E2',
     padding: 16,
     borderRadius: 12,
-    gap: 8,
+    marginBottom: 16,
   },
   buttonText: {
-    color: 'white',
-    fontSize: 18,
+    color: '#FFFFFF',
+    fontSize: 16,
     fontWeight: '600',
+    marginRight: 8,
   },
   skipButton: {
-    marginTop: 16,
     alignItems: 'center',
+    padding: 16,
   },
   skipText: {
-    color: '#6B7280',
+    color: '#64748B',
     fontSize: 16,
   },
 });

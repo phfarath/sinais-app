@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ViewStyle, TextSt
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { LinearGradient } from 'expo-linear-gradient';
 
 type RootStackParamList = {
   Profile: undefined;
@@ -36,43 +37,58 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <ScrollView>
-        <View style={styles.header}>
+        <LinearGradient
+          colors={['#FFFFFF', '#F0F7FF']}
+          style={styles.header}
+        >
           <MaterialCommunityIcons name="account-circle" size={80} color="#4A90E2" />
           <Text style={styles.name}>Visitante</Text>
           <Text style={styles.subtitle}>Perfil Anônimo</Text>
-        </View>
+        </LinearGradient>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Histórico de Alertas</Text>
-          <View style={styles.alertCard}>
+          <LinearGradient
+            colors={['#FFFFFF', '#F0F7FF']}
+            style={styles.alertCard}
+          >
             <MaterialCommunityIcons name="clock-outline" size={24} color="#4A90E2" />
             <View style={styles.alertInfo}>
               <Text style={styles.alertTitle}>Alerta de Tempo</Text>
               <Text style={styles.alertDate}>Hoje, 14:30</Text>
             </View>
-          </View>
+          </LinearGradient>
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Configurações</Text>
           
-          <TouchableOpacity style={styles.settingButton}>
-            <MaterialCommunityIcons name="account-edit-outline" size={24} color="#4B5563" />
+          <LinearGradient
+            colors={['#FFFFFF', '#F0F7FF']}
+            style={styles.settingButton}
+          >
+            <MaterialCommunityIcons name="account-edit-outline" size={24} color="#4A90E2" />
             <Text style={styles.settingText}>Editar Perfil</Text>
-            <MaterialCommunityIcons name="chevron-right" size={24} color="#6B7280" />
-          </TouchableOpacity>
+            <MaterialCommunityIcons name="chevron-right" size={24} color="#64748B" />
+          </LinearGradient>
 
-          <TouchableOpacity style={styles.settingButton}>
-            <MaterialCommunityIcons name="bell-outline" size={24} color="#4B5563" />
+          <LinearGradient
+            colors={['#FFFFFF', '#F0F7FF']}
+            style={styles.settingButton}
+          >
+            <MaterialCommunityIcons name="bell-outline" size={24} color="#4A90E2" />
             <Text style={styles.settingText}>Notificações</Text>
-            <MaterialCommunityIcons name="chevron-right" size={24} color="#6B7280" />
-          </TouchableOpacity>
+            <MaterialCommunityIcons name="chevron-right" size={24} color="#64748B" />
+          </LinearGradient>
 
-          <TouchableOpacity style={styles.settingButton}>
-            <MaterialCommunityIcons name="shield-outline" size={24} color="#4B5563" />
+          <LinearGradient
+            colors={['#FFFFFF', '#F0F7FF']}
+            style={styles.settingButton}
+          >
+            <MaterialCommunityIcons name="shield-outline" size={24} color="#4A90E2" />
             <Text style={styles.settingText}>Privacidade</Text>
-            <MaterialCommunityIcons name="chevron-right" size={24} color="#6B7280" />
-          </TouchableOpacity>
+            <MaterialCommunityIcons name="chevron-right" size={24} color="#64748B" />
+          </LinearGradient>
         </View>
 
         <TouchableOpacity 
@@ -90,92 +106,92 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
 const styles = StyleSheet.create<Styles>({
   container: {
     flex: 1,
-    backgroundColor: '#F5F8FF',
-    padding: 20,
+    backgroundColor: '#F8FAFC',
   },
   header: {
     alignItems: 'center',
-    marginBottom: 32,
+    padding: 24,
+    marginBottom: 24,
   },
   name: {
     fontSize: 24,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginTop: 12,
+    fontWeight: 'bold',
+    color: '#1E293B',
+    marginTop: 16,
+    marginBottom: 4,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6B7280',
-    marginTop: 4,
+    color: '#64748B',
   },
   section: {
     marginBottom: 24,
+    paddingHorizontal: 20,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1F2937',
+    color: '#1E293B',
     marginBottom: 16,
   },
   alertCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white',
     padding: 16,
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   alertInfo: {
     marginLeft: 16,
+    flex: 1,
   },
   alertTitle: {
     fontSize: 16,
-    fontWeight: '500',
-    color: '#1F2937',
+    fontWeight: '600',
+    color: '#1E293B',
+    marginBottom: 4,
   },
   alertDate: {
     fontSize: 14,
-    color: '#6B7280',
-    marginTop: 2,
+    color: '#64748B',
   },
   settingButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white',
     padding: 16,
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    marginBottom: 12,
+    marginBottom: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   settingText: {
     flex: 1,
     fontSize: 16,
-    color: '#4B5563',
+    color: '#1E293B',
     marginLeft: 16,
   },
   deleteButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FEE2E2',
     padding: 16,
+    backgroundColor: '#FEE2E2',
     borderRadius: 12,
-    marginTop: 24,
-    marginBottom: 32,
+    margin: 20,
   },
   deleteButtonText: {
     fontSize: 16,
-    color: '#DC2626',
     fontWeight: '600',
+    color: '#DC2626',
     marginLeft: 8,
   },
 });

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Animated, ViewStyle, TextStyle } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, ViewStyle, TextStyle, ScrollView } from 'react-native';
 import { useState, useRef, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -10,11 +10,13 @@ type CrisisModeScreenProps = {
 
 interface Styles {
   container: ViewStyle;
+  scrollContent: ViewStyle;
   header: ViewStyle;
   title: TextStyle;
   timerContainer: ViewStyle;
   timerText: TextStyle;
   timerLabel: TextStyle;
+  breathContainer: ViewStyle;
   breathCircle: ViewStyle;
   breathText: TextStyle;
   messageContainer: ViewStyle;
@@ -65,55 +67,59 @@ export default function CrisisModeScreen({ navigation }: CrisisModeScreenProps) 
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
-        <MaterialCommunityIcons name="shield-alert" size={60} color="#4A90E2" />
-        <Text style={styles.title}>Modo Controle Ativado</Text>
-      </View>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.header}>
+          <MaterialCommunityIcons name="shield-alert" size={60} color="#4A90E2" />
+          <Text style={styles.title}>Modo Controle Ativado</Text>
+        </View>
 
-      <View style={styles.timerContainer}>
-        <Text style={styles.timerText}>{timeLeft}</Text>
-        <Text style={styles.timerLabel}>segundos para respirar</Text>
-      </View>
+        <View style={styles.timerContainer}>
+          <Text style={styles.timerText}>{timeLeft}</Text>
+          <Text style={styles.timerLabel}>segundos para respirar</Text>
+        </View>
 
-      <Animated.View
-        style={[
-          styles.breathCircle,
-          {
-            transform: [
+        <View style={styles.breathContainer}>
+          <Animated.View
+            style={[
+              styles.breathCircle,
               {
-                scale: breathAnimation.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [1, 1.3],
-                }),
+                transform: [
+                  {
+                    scale: breathAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [1, 1.3],
+                    }),
+                  },
+                ],
               },
-            ],
-          },
-        ]}
-      >
-        <Text style={styles.breathText}>Respire</Text>
-      </Animated.View>
+            ]}
+          >
+            <Text style={styles.breathText}>Respire</Text>
+          </Animated.View>
+        </View>
 
-      <View style={styles.messageContainer}>
-        <Text style={styles.message}>
-          Você se comprometeu a reduzir esse hábito. Estamos com você.
-        </Text>
-      </View>
+        <View style={styles.messageContainer}>
+          <Text style={styles.message}>
+            Você se comprometeu a reduzir esse hábito. Estamos com você.
+          </Text>
+        </View>
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[styles.button, styles.primaryButton]}
-          onPress={() => navigation.navigate('Breathing')}
-        >
-          <Text style={styles.primaryButtonText}>Continuar Respirando</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity 
+            style={[styles.button, styles.primaryButton]}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.primaryButtonText}>Continuar</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.button, styles.secondaryButton]}
-          onPress={() => navigation.navigate('Dashboard')}
-        >
-          <Text style={styles.secondaryButtonText}>Voltar para Dashboard</Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity 
+            style={[styles.button, styles.secondaryButton]}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.secondaryButtonText}>Cancelar</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -121,7 +127,10 @@ export default function CrisisModeScreen({ navigation }: CrisisModeScreenProps) 
 const styles = StyleSheet.create<Styles>({
   container: {
     flex: 1,
-    backgroundColor: '#F5F8FF',
+    backgroundColor: '#F8FAFC',
+  },
+  scrollContent: {
+    flexGrow: 1,
     padding: 20,
   },
   header: {
@@ -130,10 +139,9 @@ const styles = StyleSheet.create<Styles>({
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
-    color: '#1F2937',
+    fontWeight: 'bold',
+    color: '#1E293B',
     marginTop: 16,
-    textAlign: 'center',
   },
   timerContainer: {
     alignItems: 'center',
@@ -141,48 +149,56 @@ const styles = StyleSheet.create<Styles>({
   },
   timerText: {
     fontSize: 48,
-    fontWeight: '700',
+    fontWeight: 'bold',
     color: '#4A90E2',
   },
   timerLabel: {
     fontSize: 16,
-    color: '#6B7280',
+    color: '#64748B',
     marginTop: 8,
+  },
+  breathContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+    minHeight: 200,
   },
   breathCircle: {
     width: 150,
     height: 150,
     borderRadius: 75,
-    backgroundColor: '#4A90E2',
+    backgroundColor: '#EFF6FF',
     alignItems: 'center',
     justifyContent: 'center',
-    alignSelf: 'center',
-    marginBottom: 40,
-  },
-  breathText: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: '600',
-  },
-  messageContainer: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 40,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  breathText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#1E293B',
+  },
+  messageContainer: {
+    marginBottom: 40,
+    padding: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   message: {
-    fontSize: 18,
-    color: '#1F2937',
+    fontSize: 16,
+    color: '#1E293B',
     textAlign: 'center',
     lineHeight: 24,
   },
   buttonContainer: {
-    gap: 12,
+    gap: 16,
   },
   button: {
     padding: 16,
@@ -193,15 +209,15 @@ const styles = StyleSheet.create<Styles>({
     backgroundColor: '#4A90E2',
   },
   primaryButtonText: {
-    color: 'white',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },
   secondaryButton: {
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#F1F5F9',
   },
   secondaryButtonText: {
-    color: '#4B5563',
+    color: '#64748B',
     fontSize: 16,
     fontWeight: '600',
   },

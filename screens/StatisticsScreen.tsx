@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, ScrollView, ViewStyle, TextStyle } from 'react-
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { LinearGradient } from 'expo-linear-gradient';
 
 type RootStackParamList = {
   Statistics: undefined;
@@ -37,9 +38,18 @@ export default function StatisticsScreen({ navigation }: StatisticsScreenProps) 
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <Text style={styles.title}>Estatísticas</Text>
+      <LinearGradient
+        colors={['#FFFFFF', '#F8FAFC']}
+        style={{ paddingBottom: 16 }}
+      >
+        <Text style={styles.title}>Estatísticas</Text>
+      </LinearGradient>
+      
       <ScrollView>
-        <View style={styles.card}>
+        <LinearGradient
+          colors={['#FFFFFF', '#F0F7FF']}
+          style={styles.card}
+        >
           <Text style={styles.cardTitle}>Histórico de Comportamento</Text>
           <View style={styles.timelineContainer}>
             <View style={styles.timelineItem}>
@@ -57,46 +67,40 @@ export default function StatisticsScreen({ navigation }: StatisticsScreenProps) 
               </View>
             </View>
           </View>
-        </View>
+        </LinearGradient>
 
-        <View style={styles.card}>
+        <LinearGradient
+          colors={['#FFFFFF', '#F0F7FF']}
+          style={styles.card}
+        >
           <Text style={styles.cardTitle}>Tempo Semanal</Text>
           <View style={styles.statRow}>
             <MaterialCommunityIcons name="clock-outline" size={24} color="#4A90E2" />
             <Text style={styles.statValue}>3h 45min</Text>
             <Text style={styles.statChange}>-15% esta semana</Text>
           </View>
-        </View>
+        </LinearGradient>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Histórico de Comportamento</Text>
-          <View style={styles.timelineContainer}>
-            <View style={styles.timelineItem}>
-              <MaterialCommunityIcons name="alert-circle" size={24} color="#F59E0B" />
-              <View style={styles.timelineContent}>
-                <Text style={styles.timelineTitle}>Alerta de Tempo</Text>
-                <Text style={styles.timelineDate}>Hoje, 14:30</Text>
-              </View>
-            </View>
-            <View style={styles.timelineItem}>
-              <MaterialCommunityIcons name="emoticon" size={24} color="#10B981" />
-              <View style={styles.timelineContent}>
-                <Text style={styles.timelineTitle}>Humor Melhorou</Text>
-                <Text style={styles.timelineDate}>Ontem</Text>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.card}>
+        <LinearGradient
+          colors={['#FFFFFF', '#F0F7FF']}
+          style={styles.card}
+        >
           <Text style={styles.cardTitle}>Progresso</Text>
           <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: '65%' }]} />
+            <LinearGradient
+              colors={['#4A90E2', '#60A5FA']}
+              style={[styles.progressFill, { width: '65%' }]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            />
           </View>
           <Text style={styles.progressText}>65% do caminho para seu objetivo</Text>
-        </View>
+        </LinearGradient>
 
-        <View style={styles.card}>
+        <LinearGradient
+          colors={['#FFFFFF', '#F0F7FF']}
+          style={styles.card}
+        >
           <Text style={styles.cardTitle}>Histórico de Comportamento</Text>
           <View style={styles.timelineContainer}>
             <View style={styles.timelineItem}>
@@ -114,9 +118,12 @@ export default function StatisticsScreen({ navigation }: StatisticsScreenProps) 
               </View>
             </View>
           </View>
-        </View>
+        </LinearGradient>
 
-        <View style={styles.card}>
+        <LinearGradient
+          colors={['#FFFFFF', '#F0F7FF']}
+          style={styles.card}
+        >
           <Text style={styles.cardTitle}>Conquistas</Text>
           <View style={styles.achievementsGrid}>
             {( ['compass', 'meditation', 'run', 'heart'] as const).map((icon, index) => (
@@ -125,79 +132,86 @@ export default function StatisticsScreen({ navigation }: StatisticsScreenProps) 
               </View>
             ))}
           </View>
-        </View>
+        </LinearGradient>
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create<Styles>({
+  container: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#1E293B',
+    padding: 20,
+    marginBottom: 8,
+  },
+  card: {
+    margin: 16,
+    padding: 20,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1E293B',
+    marginBottom: 16,
+  },
   timelineContainer: {
     gap: 16,
   },
   timelineItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    padding: 12,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
   },
   timelineContent: {
+    marginLeft: 12,
     flex: 1,
   },
   timelineTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1F2937',
+    color: '#1E293B',
+    marginBottom: 4,
   },
   timelineDate: {
     fontSize: 14,
-    color: '#6B7280',
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F8FF',
-    padding: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 24,
-  },
-  card: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 16,
+    color: '#64748B',
   },
   statRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    padding: 12,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
   },
   statValue: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#4A90E2',
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1E293B',
+    marginLeft: 12,
+    marginRight: 'auto',
   },
   statChange: {
     fontSize: 14,
-    color: '#10B981',
-    marginLeft: 'auto',
+    color: '#64748B',
   },
   progressBar: {
     height: 8,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#E2E8F0',
     borderRadius: 4,
     marginBottom: 8,
   },
@@ -208,7 +222,7 @@ const styles = StyleSheet.create<Styles>({
   },
   progressText: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#64748B',
     textAlign: 'center',
   },
   achievementsGrid: {

@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 type RootStackParamList = {
   Alert: undefined;
@@ -54,7 +55,10 @@ export default function DashboardScreen({ navigation, route }: DashboardScreenPr
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <ScrollView>
-        <View style={styles.header}>
+        <LinearGradient
+          colors={['#FFFFFF', '#F8FAFC']}
+          style={styles.header}
+        >
           <Text style={styles.welcome}>Olá, Visitante</Text>
           <Text style={styles.date}>
             {new Date().toLocaleDateString('pt-BR', { 
@@ -63,7 +67,12 @@ export default function DashboardScreen({ navigation, route }: DashboardScreenPr
               month: 'long' 
             })}
           </Text>
-        </View>        <View style={styles.riskCard}>
+        </LinearGradient>
+
+        <LinearGradient
+          colors={['#FFFFFF', '#F0F7FF']}
+          style={styles.riskCard}
+        >
           <MaterialCommunityIcons 
             name="shield-alert-outline" 
             size={32} 
@@ -74,9 +83,12 @@ export default function DashboardScreen({ navigation, route }: DashboardScreenPr
           <Text style={styles.riskDescription}>
             Baseado nas suas respostas, identificamos seu perfil de risco
           </Text>
-        </View>
+        </LinearGradient>
 
-        <View style={styles.predictionCard}>
+        <LinearGradient
+          colors={['#FFFFFF', '#FFF7ED']}
+          style={styles.predictionCard}
+        >
           <View style={styles.predictionHeader}>
             <MaterialCommunityIcons 
               name="trending-up" 
@@ -99,7 +111,9 @@ export default function DashboardScreen({ navigation, route }: DashboardScreenPr
             <Text style={styles.alertButtonText}>Receber mais alertas</Text>
             <MaterialCommunityIcons name="bell-plus" size={20} color="white" />
           </TouchableOpacity>
-        </View>        <TouchableOpacity 
+        </LinearGradient>
+
+        <TouchableOpacity 
           style={styles.crisisButton}
           onPress={() => navigation.navigate('CrisisMode')}
         >
@@ -210,49 +224,56 @@ const styles = StyleSheet.create<Styles>({
   },
   container: {
     flex: 1,
-    backgroundColor: '#F5F8FF',
+    backgroundColor: '#F8FAFC',
   },
   header: {
     padding: 20,
-  },
-  welcome: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#1F2937',
-  },
-  date: {
-    fontSize: 16,
-    color: '#6B7280',
-    marginTop: 4,
-  },
-  riskCard: {
-    backgroundColor: 'white',
-    margin: 20,
-    padding: 24,
-    borderRadius: 16,
-    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  welcome: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#1E293B',
+    marginBottom: 4,
+  },
+  date: {
+    fontSize: 16,
+    color: '#64748B',
+  },
+  riskCard: {
+    margin: 16,
+    padding: 20,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   riskTitle: {
     fontSize: 18,
-    color: '#4B5563',
+    fontWeight: '600',
+    color: '#1E293B',
     marginTop: 12,
   },
   riskLevel: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: 'bold',
     color: '#4A90E2',
-    marginTop: 8,
+    marginVertical: 8,
   },
   riskDescription: {
     fontSize: 14,
-    color: '#6B7280',
-    textAlign: 'center',
-    marginTop: 8,
+    color: '#64748B',
+    lineHeight: 20,
   },
   actionsGrid: {
     flexDirection: 'row',
@@ -280,54 +301,51 @@ const styles = StyleSheet.create<Styles>({
     marginTop: 12,
     fontWeight: '500',  },
   predictionCard: {
-    backgroundColor: 'white',
-    margin: 20,
-    padding: 24,
+    margin: 16,
+    padding: 20,
     borderRadius: 16,
+    backgroundColor: '#FFFFFF',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   predictionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   predictionBadge: {
-    backgroundColor: '#FFFBEB',
-    color: '#F59E0B',
-    padding: 8,
-    borderRadius: 8,
+    marginLeft: 12,
     fontSize: 14,
     fontWeight: '600',
+    color: '#F59E0B',
   },
   predictionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#1F2937',
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1E293B',
     marginBottom: 8,
   },
   predictionDescription: {
-    fontSize: 16,
-    color: '#6B7280',
-    lineHeight: 24,
+    fontSize: 14,
+    color: '#64748B',
+    lineHeight: 20,
     marginBottom: 16,
   },
   alertButton: {
-    backgroundColor: '#4A90E2',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#4A90E2',
     padding: 12,
     borderRadius: 8,
-    gap: 8,
   },
   alertButtonText: {
-    color: 'white',
-    fontSize: 14,
+    color: '#FFFFFF',
+    fontSize: 16,
     fontWeight: '600',
+    marginRight: 8,
   },
 });

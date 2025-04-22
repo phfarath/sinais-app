@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Animated, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
+import { View, Text, StyleSheet, Animated, TouchableOpacity, ViewStyle, TextStyle, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRef, useState, useEffect } from 'react';
@@ -45,59 +45,65 @@ export default function BreathingScreen({ navigation }: BreathingScreenProps) {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <Text style={styles.title}>Exercício de Respiração</Text>
-      
-      <View style={styles.exerciseContainer}>
-        <Animated.View
-          style={[
-            styles.breathCircle,
-            {
-              transform: [
-                {
-                  scale: breathAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [1, 1.5],
-                  }),
-                },
-              ],
-            },
-          ]}
-        >
-          <MaterialCommunityIcons 
-            name="weather-windy" 
-            size={40} 
-            color="#4A90E2" 
-          />
-        </Animated.View>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Text style={styles.title}>Exercício de Respiração</Text>
         
-        <Text style={styles.instruction}>
-          {isExercising ? 'Inspire... Expire...' : 'Pressione para começar'}
-        </Text>
-      </View>
+        <View style={styles.exerciseContainer}>
+          <View style={styles.breathContainer}>
+            <Animated.View
+              style={[
+                styles.breathCircle,
+                {
+                  transform: [
+                    {
+                      scale: breathAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [1, 1.5],
+                      }),
+                    },
+                  ],
+                },
+              ]}
+            >
+              <MaterialCommunityIcons 
+                name="weather-windy" 
+                size={40} 
+                color="#4A90E2" 
+              />
+            </Animated.View>
+          </View>
+          
+          <Text style={styles.instruction}>
+            {isExercising ? 'Inspire... Expire...' : 'Pressione para começar'}
+          </Text>
+        </View>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={isExercising ? stopBreathing : startBreathing}
-      >
-        <Text style={styles.buttonText}>
-          {isExercising ? 'Parar' : 'Começar'}
-        </Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={isExercising ? stopBreathing : startBreathing}
+        >
+          <Text style={styles.buttonText}>
+            {isExercising ? 'Parar' : 'Começar'}
+          </Text>
+        </TouchableOpacity>
 
-      <View style={styles.tipsContainer}>
-        <Text style={styles.tipsTitle}>Dicas:</Text>
-        <Text style={styles.tipText}>• Respire lentamente e profundamente</Text>
-        <Text style={styles.tipText}>• Mantenha uma postura relaxada</Text>
-        <Text style={styles.tipText}>• Concentre-se na sua respiração</Text>
-      </View>
+        <View style={styles.tipsContainer}>
+          <Text style={styles.tipsTitle}>Dicas:</Text>
+          <Text style={styles.tipText}>• Respire lentamente e profundamente</Text>
+          <Text style={styles.tipText}>• Mantenha uma postura relaxada</Text>
+          <Text style={styles.tipText}>• Concentre-se na sua respiração</Text>
+        </View>
+      </ScrollView>
     </View>
   );
 }
 
 interface Styles {
   container: ViewStyle;
+  scrollContent: ViewStyle;
   title: TextStyle;
   exerciseContainer: ViewStyle;
+  breathContainer: ViewStyle;
   breathCircle: ViewStyle;
   instruction: TextStyle;
   button: ViewStyle;
@@ -110,65 +116,80 @@ interface Styles {
 const styles = StyleSheet.create<Styles>({
   container: {
     flex: 1,
-    backgroundColor: '#F5F8FF',
+    backgroundColor: '#F8FAFC',
+  },
+  scrollContent: {
+    flexGrow: 1,
     padding: 20,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#1F2937',
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1E293B',
+    textAlign: 'center',
     marginBottom: 40,
   },
   exerciseContainer: {
-    flex: 1,
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  breathContainer: {
+    width: '100%',
+    height: 200,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 24,
   },
   breathCircle: {
     width: 150,
     height: 150,
     borderRadius: 75,
-    backgroundColor: 'white',
+    backgroundColor: '#EFF6FF',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#4A90E2',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2,
-    shadowRadius: 20,
-    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   instruction: {
     fontSize: 18,
-    color: '#4B5563',
-    marginTop: 24,
+    fontWeight: '600',
+    color: '#1E293B',
+    textAlign: 'center',
   },
   button: {
     backgroundColor: '#4A90E2',
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 40,
   },
   buttonText: {
-    color: 'white',
-    fontSize: 18,
+    color: '#FFFFFF',
+    fontSize: 16,
     fontWeight: '600',
   },
   tipsContainer: {
-    backgroundColor: 'white',
-    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
     padding: 20,
-    marginBottom: 20,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   tipsTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1F2937',
+    color: '#1E293B',
     marginBottom: 12,
   },
   tipText: {
     fontSize: 16,
-    color: '#6B7280',
+    color: '#64748B',
     marginBottom: 8,
   },
 });
