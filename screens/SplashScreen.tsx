@@ -6,6 +6,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 type RootStackParamList = {
   Splash: undefined;
+  Onboarding: undefined;
   Login: undefined;
 };
 
@@ -35,7 +36,7 @@ export default function SplashScreen({ navigation }: SplashScreenProps) {
     ]);
 
     animation.start(() => {
-      navigation.replace('Login');
+      navigation.replace('Onboarding');
     });
 
     return () => {

@@ -4,6 +4,7 @@ import { StyleSheet } from 'react-native';
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import { Toaster } from 'sonner-native';
 import SplashScreen from "./screens/SplashScreen"
+import OnboardingScreen from "./screens/OnboardingScreen"
 import LoginScreen from "./screens/LoginScreen"
 import QuizIntroScreen from "./screens/QuizIntroScreen"
 import QuizScreen from "./screens/QuizScreen"
@@ -20,8 +21,33 @@ import InsightsScreen from "./screens/InsightsScreen"
 import CrisisModeScreen from "./screens/CrisisModeScreen"
 import OpenFinanceScreen from "./screens/OpenFinanceScreen"
 import WhyItMattersScreen from "./screens/WhyItMattersScreen"
+import SettingsScreen from "./screens/SettingsScreen"
 
-const Stack = createNativeStackNavigator();
+// Definindo o tipo dos parâmetros para a navegação
+export type RootStackParamList = {
+  Splash: undefined;
+  Onboarding: undefined;
+  Login: undefined;
+  QuizIntro: undefined;
+  Quiz: undefined;
+  Dashboard: { riskProfile?: string };
+  Alert: undefined;
+  Educational: undefined;
+  Help: undefined;
+  Profile: undefined;
+  Statistics: undefined;
+  Breathing: undefined;
+  Goals: undefined;
+  Community: undefined;
+  Insights: undefined;
+  CrisisMode: undefined;
+  OpenFinance: undefined;
+  WhyItMatters: undefined;
+  Settings: undefined;
+};
+
+// Criando o Stack Navigator com os tipos definidos
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function RootStack() {
   return (
@@ -33,8 +59,9 @@ function RootStack() {
         headerShadowVisible: false,
         headerBackTitle: 'Voltar',
       }}>
-      <Stack.Screen name="Splash" component={SplashScreen} />
-      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="Splash" component={SplashScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
       <Stack.Screen name="QuizIntro" component={QuizIntroScreen} />
       <Stack.Screen name="Quiz" component={QuizScreen} />
       <Stack.Screen name="Dashboard" component={DashboardScreen} />
@@ -50,6 +77,7 @@ function RootStack() {
       <Stack.Screen name="CrisisMode" component={CrisisModeScreen} />
       <Stack.Screen name="OpenFinance" component={OpenFinanceScreen} />
       <Stack.Screen name="WhyItMatters" component={WhyItMattersScreen} />
+      <Stack.Screen name="Settings" component={SettingsScreen} />
     </Stack.Navigator>
   );
 }
