@@ -18,6 +18,7 @@ type RootStackParamList = {
   Profile: undefined;
   CrisisMode: undefined;
   Dashboard: { riskProfile?: string };
+  Monitoring: undefined;
 };
 
 type DashboardScreenProps = {
@@ -136,6 +137,14 @@ export default function DashboardScreen({ navigation, route }: DashboardScreenPr
           >
             <MaterialCommunityIcons name="chart-line" size={32} color="#4A90E2" />
             <Text style={styles.actionTitle}>Estatísticas</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.actionCard}
+            onPress={() => navigation.navigate('Monitoring')}
+          >
+            <MaterialCommunityIcons name="eye-outline" size={32} color="#4A90E2" />
+            <Text style={styles.actionTitle}>Monitoramento</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 

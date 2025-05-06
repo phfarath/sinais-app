@@ -1,131 +1,344 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
-interface Article {
-  id: number;
-  title: string;
-  type: string;
-  duration: string;
-  icon: "file-document-outline" | "play-circle-outline" | "chart-line";
-}
-
-type RootStackParamList = {
-  Educational: undefined;
-  ArticleDetail: { articleId: number };
-};
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../App';
 
 type EducationalScreenProps = {
-  navigation: NativeStackNavigationProp<RootStackParamList, 'Educational'>;
+  navigation: StackNavigationProp<RootStackParamList, 'Educational'>;
 };
-
-interface Styles {
-  container: ViewStyle;
-  title: TextStyle;
-  card: ViewStyle;
-  cardContent: ViewStyle;
-  cardTitle: TextStyle;
-  cardMeta: ViewStyle;
-  cardType: TextStyle;
-  cardDuration: TextStyle;
-}
-
-const articles: Article[] = [
-  {
-    id: 1,
-    title: '5 Sinais de Comportamento de Risco',
-    type: 'Artigo',
-    duration: '5 min',
-    icon: 'file-document-outline'
-  },
-  {
-    id: 2,
-    title: 'Como o Vício em Apostas Afeta o Cérebro',
-    type: 'Vídeo',
-    duration: '3 min',
-    icon: 'play-circle-outline'
-  },
-  {
-    id: 3,
-    title: 'Simulador de Investimentos',
-    type: 'Ferramenta',
-    duration: '2 min',
-    icon: 'chart-line'
-  }
-];
 
 export default function EducationalScreen({ navigation }: EducationalScreenProps) {
   const insets = useSafeAreaInsets();
 
+  const resources = [
+    {
+      id: 1,
+      title: 'Como funciona o vício em apostas',
+      image: require('../assets/icon.png'),
+      type: 'Artigo',
+      duration: '5 min',
+    },
+    {
+      id: 2,
+      title: 'Sinais de alerta para comportamento compulsivo',
+      image: require('../assets/icon.png'),
+      type: 'Vídeo',
+      duration: '3 min',
+    },
+    {
+      id: 3,
+      title: 'Técnicas de controle financeiro',
+      image: require('../assets/icon.png'),
+      type: 'Tutorial',
+      duration: '7 min',
+    },
+  ];
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <Text style={styles.title}>Central Educativa</Text>
-      
-      <ScrollView>
-        {articles.map(article => (
-          <TouchableOpacity key={article.id} style={styles.card}>
-            <MaterialCommunityIcons name={article.icon} size={32} color="#4A90E2" />
-            <View style={styles.cardContent}>
-              <Text style={styles.cardTitle}>{article.title}</Text>
-              <View style={styles.cardMeta}>
-                <Text style={styles.cardType}>{article.type}</Text>
-                <Text style={styles.cardDuration}>{article.duration}</Text>
-              </View>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <LinearGradient
+          colors={['#FFFFFF', '#F8FAFC']}
+          style={styles.headerGradient}
+        >
+          <Text style={styles.title}>Central Educativa</Text>
+          <Text style={styles.subtitle}>Aprenda sobre jogo responsável</Text>
+        </LinearGradient>
+
+        {/* Botão para insights de IA */}
+        <TouchableOpacity 
+          style={styles.insightsButton}
+          onPress={() => navigation.navigate('Insights')}
+        >
+          <MaterialCommunityIcons name="brain" size={24} color="white" />
+          <Text style={styles.insightsButtonText}>Insights da IA</Text>
+        </TouchableOpacity>
+
+        {/* Seção de Apoio (do HelpScreen) */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Precisa de Apoio?</Text>
+          
+          <TouchableOpacity style={styles.chatSupport}>
+            <MaterialCommunityIcons name="chat-processing" size={24} color="#4A90E2" />
+            <View style={styles.chatInfo}>
+              <Text style={styles.chatTitle}>Chat de Apoio 24/7</Text>
+              <Text style={styles.chatSubtitle}>Disponível agora</Text>
             </View>
-            <MaterialCommunityIcons name="chevron-right" size={24} color="#6B7280" />
           </TouchableOpacity>
-        ))}
+
+          <TouchableOpacity style={styles.appointmentButton}>
+            <MaterialCommunityIcons name="calendar-clock" size={24} color="#4A90E2" />
+            <View style={styles.chatInfo}>
+              <Text style={styles.chatTitle}>Agendar Consulta</Text>
+              <Text style={styles.chatSubtitle}>Psicólogo voluntário</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+        
+        {/* Contatos de Apoio (do HelpScreen) */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Contatos de Apoio</Text>
+          
+          <TouchableOpacity style={styles.contactCard}>
+            <MaterialCommunityIcons name="phone" size={24} color="#10B981" />
+            <View style={styles.contactInfo}>
+              <Text style={styles.contactName}>Linha de Apoio ao Jogador</Text>
+              <Text style={styles.contactDetail}>0800 000 0000</Text>
+            </View>
+            <MaterialCommunityIcons name="phone-outgoing" size={24} color="#4A90E2" />
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.contactCard}>
+            <MaterialCommunityIcons name="earth" size={24} color="#10B981" />
+            <View style={styles.contactInfo}>
+              <Text style={styles.contactName}>Jogadores Anônimos</Text>
+              <Text style={styles.contactDetail}>www.jogadoresanonimos.org.br</Text>
+            </View>
+            <MaterialCommunityIcons name="open-in-new" size={24} color="#4A90E2" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Conteúdo educativo original */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Conteúdo Recomendado</Text>
+          
+          {resources.map(resource => (
+            <TouchableOpacity key={resource.id} style={styles.resourceCard}>
+              <Image source={resource.image} style={styles.resourceImage} />
+              <View style={styles.resourceInfo}>
+                <Text style={styles.resourceTitle}>{resource.title}</Text>
+                <View style={styles.resourceMeta}>
+                  <Text style={styles.resourceType}>{resource.type}</Text>
+                  <Text style={styles.resourceDuration}>
+                    <MaterialCommunityIcons name="clock-outline" size={14} color="#6B7280" />
+                    {' ' + resource.duration}
+                  </Text>
+                </View>
+              </View>
+              <MaterialCommunityIcons name="chevron-right" size={24} color="#9CA3AF" />
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Dicas Rápidas</Text>
+          
+          <LinearGradient
+            colors={['#FFFFFF', '#F0F7FF']}
+            style={styles.tipCard}
+          >
+            <View style={styles.tipHeader}>
+              <MaterialCommunityIcons name="lightbulb-outline" size={24} color="#4A90E2" />
+              <Text style={styles.tipTitle}>Defina limites</Text>
+            </View>
+            <Text style={styles.tipDescription}>
+              Estabeleça um orçamento e um tempo máximo para apostas antes de começar
+            </Text>
+          </LinearGradient>
+          
+          <LinearGradient
+            colors={['#FFFFFF', '#FFFAEB']}
+            style={styles.tipCard}
+          >
+            <View style={styles.tipHeader}>
+              <MaterialCommunityIcons name="timer-outline" size={24} color="#F59E0B" />
+              <Text style={styles.tipTitle}>Faça pausas</Text>
+            </View>
+            <Text style={styles.tipDescription}>
+              Intervalos regulares ajudam a manter o controle e a clareza mental
+            </Text>
+          </LinearGradient>
+        </View>
       </ScrollView>
     </View>
   );
 }
 
-const styles = StyleSheet.create<Styles>({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F5F8FF',
-    padding: 20,
+  },
+  headerGradient: {
+    paddingHorizontal: 20,
+    paddingBottom: 16,
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
     color: '#1F2937',
-    marginBottom: 24,
+    marginBottom: 8,
   },
-  card: {
+  subtitle: {
+    fontSize: 16,
+    color: '#6B7280',
+  },
+  insightsButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white',
+    justifyContent: 'center',
+    backgroundColor: '#4A90E2',
     padding: 16,
+    margin: 16,
     borderRadius: 12,
-    marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
   },
-  cardContent: {
-    flex: 1,
-    marginLeft: 16,
+  insightsButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
   },
-  cardTitle: {
+  section: {
+    padding: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 12,
+  },
+  resourceCard: {
+    flexDirection: 'row',
+    backgroundColor: 'white',
+    borderRadius: 12,
+    marginBottom: 12,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+    alignItems: 'center',
+  },
+  resourceImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 12,
+  },
+  resourceInfo: {
+    flex: 1,
+  },
+  resourceTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: '#1F2937',
     marginBottom: 4,
   },
-  cardMeta: {
+  resourceMeta: {
     flexDirection: 'row',
-    gap: 8,
+    alignItems: 'center',
   },
-  cardType: {
+  resourceType: {
+    fontSize: 14,
+    color: '#4A90E2',
+    fontWeight: '500',
+    marginRight: 12,
+  },
+  resourceDuration: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  tipCard: {
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  tipHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  tipTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginLeft: 8,
+  },
+  tipDescription: {
+    fontSize: 14,
+    color: '#4B5563',
+    lineHeight: 20,
+  },
+  // Estilos para o conteúdo de apoio (do HelpScreen)
+  chatSupport: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  chatInfo: {
+    marginLeft: 16,
+    flex: 1,
+  },
+  chatTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 4,
+  },
+  chatSubtitle: {
     fontSize: 14,
     color: '#4A90E2',
   },
-  cardDuration: {
+  appointmentButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  contactCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  contactInfo: {
+    marginLeft: 16,
+    flex: 1,
+  },
+  contactName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 4,
+  },
+  contactDetail: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#4B5563',
   },
 });

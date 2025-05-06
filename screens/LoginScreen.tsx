@@ -20,6 +20,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 type RootStackParamList = {
   Login: undefined;
   QuizIntro: undefined;
+  MainTabs: undefined;
 };
 
 type LoginScreenProps = {
@@ -88,7 +89,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
     if (type === 'email') {
       setShowLoginModal(true);
     } else if (type === 'guest') {
-      navigation.navigate('QuizIntro');
+      navigation.navigate('MainTabs');
     } else {
       // Para métodos OAuth, mostramos a tela de consentimentos antes de prosseguir
       setShowConsentModal(true);
@@ -108,7 +109,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
 
   const handleConsentComplete = () => {
     setShowConsentModal(false);
-    navigation.navigate('QuizIntro');
+    navigation.navigate('MainTabs');
   };
 
   const renderLoginModal = () => {

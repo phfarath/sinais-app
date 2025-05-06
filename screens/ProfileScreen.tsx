@@ -9,6 +9,7 @@ type RootStackParamList = {
   Profile: undefined;
   Login: undefined;
   Settings: undefined;
+  OpenFinance: undefined;
   // Add other routes as needed
 };
 
@@ -180,6 +181,15 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
             <Text style={styles.settingText}>Privacidade</Text>
             <MaterialCommunityIcons name="chevron-right" size={24} color="#64748B" />
           </LinearGradient>
+
+          <TouchableOpacity 
+            style={[styles.settingButton, { marginTop: 8 }]}
+            onPress={() => navigation.navigate('OpenFinance')}
+          >
+            <MaterialCommunityIcons name="bank-outline" size={24} color="#4A90E2" />
+            <Text style={styles.settingText}>Conectar com meu banco</Text>
+            <MaterialCommunityIcons name="chevron-right" size={24} color="#64748B" />
+          </TouchableOpacity>
         </View>
 
         <TouchableOpacity 
