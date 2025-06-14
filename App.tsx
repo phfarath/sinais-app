@@ -10,6 +10,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import SplashScreen from "./screens/SplashScreen"
 import OnboardingScreen from "./screens/OnboardingScreen"
 import LoginScreen from "./screens/LoginScreen"
+import MFAScreen from "./screens/MFAScreen"
 import QuizIntroScreen from "./screens/QuizIntroScreen"
 import QuizScreen from "./screens/QuizScreen"
 import DashboardScreen from "./screens/DashboardScreen"
@@ -29,11 +30,19 @@ import SettingsScreen from "./screens/SettingsScreen"
 import MonitoringScreen from "./screens/MonitoringScreen"
 import HomeScreen from "./screens/HomeScreen"
 
+// Telas de Cybersecurity
+import DataControlScreen from "./screens/DataControlScreen"
+import ExplanationAuditScreen from "./screens/ExplanationAuditScreen"
+import BiasAnalysisScreen from "./screens/BiasAnalysisScreen"
+import CybersecurityDemoScreen from "./screens/CybersecurityDemoScreen"
+import CryptographyDemoScreen from "./screens/CryptographyDemoScreen"
+
 // Definindo o tipo dos parâmetros para a navegação
 export type RootStackParamList = {
   Splash: undefined;
   Onboarding: undefined;
   Login: undefined;
+  MFA: { userId: string; method?: 'sms' | 'email' | 'authenticator' };
   QuizIntro: undefined;
   Quiz: undefined;
   MainTabs: undefined;
@@ -53,6 +62,11 @@ export type RootStackParamList = {
   Settings: undefined;
   Monitoring: undefined;
   Home: undefined;
+  DataControl: undefined;
+  ExplanationAudit: undefined;
+  BiasAnalysis: undefined;
+  CybersecurityDemo: undefined;
+  CryptographyDemo: undefined;
 };
 
 // Tipos para os navigators de tabs
@@ -84,6 +98,9 @@ export type ProfileStackParamList = {
   OpenFinance: undefined;
   Settings: undefined;
   CrisisMode: undefined;
+  DataControl: undefined;
+  ExplanationAudit: undefined;
+  BiasAnalysis: undefined;
 };
 
 // Criando o Stack Navigator com os tipos definidos
@@ -177,6 +194,9 @@ function ProfileStackScreen() {
       <ProfileStack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Perfil' }} />
       <ProfileStack.Screen name="OpenFinance" component={OpenFinanceScreen} options={{ title: 'Open Finance' }} />
       <ProfileStack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Configurações' }} />
+      <ProfileStack.Screen name="DataControl" component={DataControlScreen} options={{ title: 'Controle de Dados' }} />
+      <ProfileStack.Screen name="ExplanationAudit" component={ExplanationAuditScreen} options={{ title: 'Auditoria de IA' }} />
+      <ProfileStack.Screen name="BiasAnalysis" component={BiasAnalysisScreen} options={{ title: 'Análise de Viés' }} />
       <ProfileStack.Screen name="CrisisMode" component={CrisisModeScreen} options={{ title: 'Modo Controle' }} />
     </ProfileStack.Navigator>
   );
@@ -285,10 +305,16 @@ function RootStack() {
       <Stack.Screen name="Splash" component={SplashScreen} />
       <Stack.Screen name="Onboarding" component={OnboardingScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="MFA" component={MFAScreen} options={{ headerShown: true, title: 'Verificação MFA' }} />
       <Stack.Screen name="QuizIntro" component={QuizIntroScreen} options={{ headerShown: true }} />
       <Stack.Screen name="Quiz" component={QuizScreen} options={{ headerShown: true }} />
       <Stack.Screen name="MainTabs" component={MainTabNavigator} />
       <Stack.Screen name="Community" component={CommunityScreen} options={{ headerShown: true }} />
+      <Stack.Screen name="DataControl" component={DataControlScreen} options={{ headerShown: true, title: 'Controle de Dados' }} />
+      <Stack.Screen name="ExplanationAudit" component={ExplanationAuditScreen} options={{ headerShown: true, title: 'Auditoria de IA' }} />
+      <Stack.Screen name="BiasAnalysis" component={BiasAnalysisScreen} options={{ headerShown: true, title: 'Análise de Viés' }} />
+      <Stack.Screen name="CybersecurityDemo" component={CybersecurityDemoScreen} options={{ headerShown: true, title: 'Demo Cybersecurity' }} />
+      <Stack.Screen name="CryptographyDemo" component={CryptographyDemoScreen} options={{ headerShown: true, title: 'Demo Criptografia' }} />
     </Stack.Navigator>
   );
 }

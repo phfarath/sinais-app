@@ -10,7 +10,10 @@ type RootStackParamList = {
   Login: undefined;
   Settings: undefined;
   OpenFinance: undefined;
-  // Add other routes as needed
+  DataControl: undefined;
+  ExplanationAudit: undefined;
+  BiasAnalysis: undefined;
+  CrisisMode: undefined;
 };
 
 type ProfileScreenProps = {
@@ -150,9 +153,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
               <Text style={styles.alertDate}>Hoje, 14:30</Text>
             </View>
           </LinearGradient>
-        </View>
-
-        <View style={styles.section}>
+        </View>        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Configurações</Text>
           
           <TouchableOpacity 
@@ -173,14 +174,14 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
             <MaterialCommunityIcons name="chevron-right" size={24} color="#64748B" />
           </LinearGradient>
 
-          <LinearGradient
-            colors={['#FFFFFF', '#F0F7FF']}
-            style={styles.settingButton}
+          <TouchableOpacity 
+            style={[styles.settingButton]}
+            onPress={() => navigation.navigate('DataControl')}
           >
             <MaterialCommunityIcons name="shield-outline" size={24} color="#4A90E2" />
-            <Text style={styles.settingText}>Privacidade</Text>
+            <Text style={styles.settingText}>Controle de Dados (LGPD)</Text>
             <MaterialCommunityIcons name="chevron-right" size={24} color="#64748B" />
-          </LinearGradient>
+          </TouchableOpacity>
 
           <TouchableOpacity 
             style={[styles.settingButton, { marginTop: 8 }]}
@@ -190,6 +191,37 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
             <Text style={styles.settingText}>Conectar com meu banco</Text>
             <MaterialCommunityIcons name="chevron-right" size={24} color="#64748B" />
           </TouchableOpacity>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Transparência e Segurança</Text>
+          
+          <TouchableOpacity 
+            style={styles.settingButton}
+            onPress={() => navigation.navigate('ExplanationAudit')}
+          >
+            <MaterialCommunityIcons name="file-document-outline" size={24} color="#10B981" />
+            <Text style={styles.settingText}>Auditoria de Decisões da IA</Text>
+            <MaterialCommunityIcons name="chevron-right" size={24} color="#64748B" />
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.settingButton}
+            onPress={() => navigation.navigate('BiasAnalysis')}
+          >
+            <MaterialCommunityIcons name="chart-line" size={24} color="#F59E0B" />
+            <Text style={styles.settingText}>Análise de Viés e Equidade</Text>
+            <MaterialCommunityIcons name="chevron-right" size={24} color="#64748B" />
+          </TouchableOpacity>
+
+          <LinearGradient
+            colors={['#F0FDF4', '#ECFDF5']}
+            style={styles.settingButton}
+          >
+            <MaterialCommunityIcons name="security" size={24} color="#059669" />
+            <Text style={styles.settingText}>Relatório de Segurança</Text>
+            <MaterialCommunityIcons name="chevron-right" size={24} color="#64748B" />
+          </LinearGradient>
         </View>
 
         <TouchableOpacity 

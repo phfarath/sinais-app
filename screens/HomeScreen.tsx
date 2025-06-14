@@ -85,6 +85,33 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
           <Text style={styles.predictionTitle}>Previsão para esta semana</Text>
           <Text style={styles.predictionDescription}>
             Com base no seu histórico, sua tendência para esta semana é de risco médio crescente.
+          </Text>        </LinearGradient>
+
+        {/* Demonstração de Cybersecurity */}
+        <LinearGradient
+          colors={['#F0FDF4', '#ECFDF5']}
+          style={styles.predictionCard}
+        >
+          <View style={styles.predictionHeader}>
+            <MaterialCommunityIcons 
+              name="security" 
+              size={32} 
+              color="#059669" 
+            />
+            <Text style={[styles.predictionBadge, { color: '#059669' }]}>
+              <MaterialCommunityIcons name="shield-check" size={12} color="#059669" />
+              {" "}Protegido
+            </Text>
+          </View>
+          <Text style={[styles.predictionTitle, { color: '#059669' }]}>
+            Cybersecurity Ativo
+          </Text>
+          <Text style={[styles.predictionDescription, { color: '#065F46' }]}>
+            🔐 Criptografia AES protegendo seus dados{'\n'}
+            📝 Auditoria completa registrando todas as ações{'\n'}
+            🤖 IA explicável tomando decisões transparentes{'\n'}
+            ⚖️ Análise de viés garantindo equidade{'\n'}
+            🛡️ MFA protegendo seu acesso
           </Text>
         </LinearGradient>
 
