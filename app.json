@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "a0-project",
+    "name": "SinaisApp",
     "slug": "snack-1eb5d88a-8d09-4c6a-8e2f-742350d1ea1e",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -19,7 +19,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.anonymous.snack1eb5d88a8d094c6a8e2f742350d1ea1e"
     },
     "web": {
       "favicon": "./assets/favicon.png"
