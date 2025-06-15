@@ -11,7 +11,8 @@ import {
   TextInput,
   Switch,
   KeyboardAvoidingView,
-  Platform 
+  Platform,
+  Alert 
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -52,6 +53,8 @@ interface Styles {
   modalScroll: ViewStyle;
   inputContainer: ViewStyle;
   input: ViewStyle;
+  inputError: ViewStyle;
+  errorText: TextStyle;
   forgotPassword: TextStyle;
   sectionTitle: TextStyle;
   consentItem: ViewStyle;
@@ -59,6 +62,7 @@ interface Styles {
   switchContainer: ViewStyle;
   separator: ViewStyle;
   submitButton: ViewStyle;
+  submitButtonDisabled: ViewStyle;
   submitButtonText: TextStyle;
   closeButton: ViewStyle;
   closeButtonText: TextStyle;
@@ -73,6 +77,8 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showValidation, setShowValidation] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   
   // Consentimentos LGPD
   const [consents, setConsents] = useState({
@@ -96,7 +102,116 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
     }
   };
 
+  // Email sanitization and validation
+  const sanitizeEmail = (input: string): string => {
+    // Remove any whitespace and convert to lowercase
+    return input.trim().toLowerCase();
+  };
+
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const sanitizedEmail = sanitizeEmail(email);
+    
+    // Check for basic email format
+    if (!emailRegex.test(sanitizedEmail)) {
+      setEmailError('Por favor, insira um e-mail válido');
+      return false;
+    }
+    
+    // Check for maximum length (254 chars is RFC standard)
+    if (sanitizedEmail.length > 254) {
+      setEmailError('E-mail muito longo');
+      return false;
+    }
+    
+    // Check for potentially dangerous characters
+    const dangerousChars = /[<>\"'%;()&+]/;
+    if (dangerousChars.test(sanitizedEmail)) {
+      setEmailError('E-mail contém caracteres inválidos');
+      return false;
+    }
+    
+    setEmailError('');
+    return true;
+  };
+
+  // Password sanitization and validation
+  const sanitizePassword = (input: string): string => {
+    // Remove leading/trailing whitespace but preserve internal spaces
+    return input.trim();
+  };
+
+  const validatePassword = (password: string): boolean => {
+    const sanitizedPassword = sanitizePassword(password);
+    
+    // Check minimum length
+    if (sanitizedPassword.length < 8) {
+      setPasswordError('A senha deve ter pelo menos 8 caracteres');
+      return false;
+    }
+    
+    // Check maximum length to prevent DoS attacks
+    if (sanitizedPassword.length > 128) {
+      setPasswordError('A senha é muito longa');
+      return false;
+    }
+    
+    // Check for at least one letter and one number
+    const hasLetter = /[a-zA-Z]/.test(sanitizedPassword);
+    const hasNumber = /\d/.test(sanitizedPassword);
+    
+    if (!hasLetter || !hasNumber) {
+      setPasswordError('A senha deve conter pelo menos uma letra e um número');
+      return false;
+    }
+    
+    // Check for potentially dangerous patterns (basic XSS prevention)
+    const dangerousPatterns = /<script|javascript:|data:|vbscript:/i;
+    if (dangerousPatterns.test(sanitizedPassword)) {
+      setPasswordError('Senha contém padrões não permitidos');
+      return false;
+    }
+    
+    setPasswordError('');
+    return true;
+  };
+
+  const handleEmailChange = (text: string) => {
+    const sanitized = sanitizeEmail(text);
+    setEmail(sanitized);
+    
+    // Clear error when user starts typing again
+    if (emailError) {
+      setEmailError('');
+    }
+  };
+
+  const handlePasswordChange = (text: string) => {
+    const sanitized = sanitizePassword(text);
+    setPassword(sanitized);
+    
+    // Clear error when user starts typing again
+    if (passwordError) {
+      setPasswordError('');
+    }
+  };
+
   const handleLogin = () => {
+    // Validate both fields before proceeding
+    const isEmailValid = validateEmail(email);
+    const isPasswordValid = validatePassword(password);
+    
+    if (!isEmailValid || !isPasswordValid) {
+      Alert.alert('Erro de validação', 'Por favor, corrija os erros nos campos');
+      return;
+    }
+    
+    // Additional security check - ensure no injection attempts
+    if (email.includes('--') || password.includes('--')) {
+      Alert.alert('Erro de segurança', 'Entrada inválida detectada');
+      return;
+    }
+    
     setShowLoginModal(false);
     setShowValidation(true);
   };
@@ -133,23 +248,34 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
               
               <View style={styles.inputContainer}>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, emailError ? styles.inputError : null]}
                   placeholder="E-mail"
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  autoCorrect={false}
+                  autoComplete="email"
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={handleEmailChange}
+                  onBlur={() => validateEmail(email)}
+                  maxLength={254}
                 />
+                {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
               </View>
 
               <View style={styles.inputContainer}>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, passwordError ? styles.inputError : null]}
                   placeholder="Senha"
                   secureTextEntry
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  autoComplete="password"
                   value={password}
-                  onChangeText={setPassword}
+                  onChangeText={handlePasswordChange}
+                  onBlur={() => validatePassword(password)}
+                  maxLength={128}
                 />
+                {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
               </View>
 
               <TouchableOpacity>
@@ -157,8 +283,12 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
               </TouchableOpacity>
 
               <TouchableOpacity 
-                style={styles.submitButton} 
+                style={[
+                  styles.submitButton,
+                  (!email || !password || emailError || passwordError) ? styles.submitButtonDisabled : null
+                ]} 
                 onPress={handleLogin}
+                disabled={!email || !password || !!emailError || !!passwordError}
               >
                 <Text style={styles.submitButtonText}>Entrar</Text>
               </TouchableOpacity>
@@ -508,6 +638,16 @@ const styles = StyleSheet.create<Styles>({
     borderRadius: 12,
     fontSize: 16,
   },
+  inputError: {
+    borderColor: '#DC2626',
+    borderWidth: 1,
+  },
+  errorText: {
+    color: '#DC2626',
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
+  },
   forgotPassword: {
     color: '#4A90E2',
     textAlign: 'right',
@@ -520,6 +660,10 @@ const styles = StyleSheet.create<Styles>({
     borderRadius: 12,
     alignItems: 'center',
     marginBottom: 12,
+  },
+  submitButtonDisabled: {
+    backgroundColor: '#9CA3AF',
+    opacity: 0.6,
   },
   submitButtonText: {
     color: 'white',
