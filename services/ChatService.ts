@@ -1,6 +1,6 @@
 // IMPORTANT: Storing API keys directly in the code is a security risk.
 // Consider using environment variables or a secure configuration service for production.
-const CHATGPT_API_KEY = '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';
+const CHATGPT_API_KEY = 'x';
 const CHATGPT_API_URL = 'https://api.openai.com/v1/chat/completions';
 
 interface ChatCompletionResponse {
