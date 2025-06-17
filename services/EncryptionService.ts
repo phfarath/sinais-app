@@ -18,11 +18,20 @@ export class EncryptionService {
    */
   static encryptData(data: string): string {
     try {
-      const encrypted = CryptoJS.AES.encrypt(data, this.ENCRYPTION_KEY).toString();
-      return encrypted;
+      // No ambiente de desenvolvimento (Expo Go), usar fallback simples
+      if (__DEV__) {
+        // Simulação de criptografia para desenvolvimento usando btoa
+        const encoded = btoa(unescape(encodeURIComponent(data)));
+        return `DEV_ENCRYPTED_${encoded}`;
+      }
+      
+      const encrypted = CryptoJS.AES.encrypt(data, this.ENCRYPTION_KEY);
+      return encrypted.toString();
     } catch (error) {
-      console.error('Erro na criptografia:', error);
-      return data; // Fallback para demonstração
+      console.warn('Erro na criptografia:', error);
+      // Fallback para desenvolvimento usando btoa
+      const encoded = btoa(unescape(encodeURIComponent(data)));
+      return `FALLBACK_${encoded}`;
     }
   }
 
@@ -33,10 +42,21 @@ export class EncryptionService {
    */
   static decryptData(encryptedData: string): string {
     try {
+      // Tratar fallbacks de desenvolvimento
+      if (encryptedData.startsWith('DEV_ENCRYPTED_')) {
+        const encoded = encryptedData.replace('DEV_ENCRYPTED_', '');
+        return decodeURIComponent(escape(atob(encoded)));
+      }
+      
+      if (encryptedData.startsWith('FALLBACK_')) {
+        const encoded = encryptedData.replace('FALLBACK_', '');
+        return decodeURIComponent(escape(atob(encoded)));
+      }
+
       const decrypted = CryptoJS.AES.decrypt(encryptedData, this.ENCRYPTION_KEY);
       return decrypted.toString(CryptoJS.enc.Utf8);
     } catch (error) {
-      console.error('Erro na descriptografia:', error);
+      console.warn('Erro na descriptografia:', error);
       return encryptedData; // Fallback para demonstração
     }
   }

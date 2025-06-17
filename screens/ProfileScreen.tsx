@@ -31,6 +31,7 @@ interface Styles {
   alertInfo: ViewStyle;
   alertTitle: TextStyle;
   alertDate: TextStyle;
+  alertBadge: TextStyle; // Added this line
   settingButton: ViewStyle;
   settingText: TextStyle;
   deleteButton: ViewStyle;
@@ -123,7 +124,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
             
             <View style={styles.graphContainer}>
               {scoreData.map((item, index) => (
-                <View key={index} style={styles.graphBar}>
+                <View key={`score-${index}-${item.week}`} style={styles.graphBar}>
                   <View 
                     style={[
                       styles.barFill, 
@@ -133,8 +134,8 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
                       }
                     ]} 
                   />
-                  <Text style={styles.barValue}>{item.score}</Text>
-                  <Text style={styles.weekLabel}>{item.week}</Text>
+                  <Text style={styles.barValue}>{String(item.score)}</Text>
+                  <Text style={styles.weekLabel}>{String(item.week)}</Text>
                 </View>
               ))}
             </View>
@@ -152,6 +153,10 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
               <Text style={styles.alertTitle}>Alerta de Tempo</Text>
               <Text style={styles.alertDate}>Hoje, 14:30</Text>
             </View>
+            <Text style={styles.alertBadge}>
+              <MaterialCommunityIcons name="clock-fast" size={12} color="#F59E0B" />
+              {` Resolvido`} {/* CORRIGIDO: template string */}
+            </Text>
           </LinearGradient>
         </View>        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Configurações</Text>
@@ -367,6 +372,16 @@ const styles = StyleSheet.create<Styles>({
   alertDate: {
     fontSize: 14,
     color: '#64748B',
+  },
+  alertBadge: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#F59E0B', // Example color, adjust as needed
+    marginLeft: 'auto', // Pushes the badge to the right
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: '#FFFBEB', // Example background, adjust as needed
   },
   settingButton: {
     flexDirection: 'row',

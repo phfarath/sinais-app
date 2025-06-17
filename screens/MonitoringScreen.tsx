@@ -201,7 +201,7 @@ export default function MonitoringScreen({ navigation }: MonitoringScreenProps) 
             <FlatList
               data={filteredActivities}
               renderItem={renderActivityItem}
-              keyExtractor={(item) => item.id}
+              keyExtractor={(item, index) => `${item.id}-${index}`} // Garantir keys únicas
               contentContainerStyle={styles.activityList}
               showsVerticalScrollIndicator={false}
               scrollEnabled={false}

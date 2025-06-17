@@ -52,7 +52,7 @@ interface Styles {
   modalSubtitle: TextStyle;
   modalScroll: ViewStyle;
   inputContainer: ViewStyle;
-  input: ViewStyle;
+  input: TextStyle;
   inputError: ViewStyle;
   errorText: TextStyle;
   forgotPassword: TextStyle;

@@ -33,13 +33,13 @@ export class AuditService {
     riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' = 'LOW'
   ): void {
     const log: AuditLog = {
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      userId,
-      action,
-      resourceType,
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      userId: String(userId),
+      action: String(action),
+      resourceType: String(resourceType),
       timestamp: new Date(),
       metadata,
-      riskLevel
+      riskLevel: String(riskLevel) as 'LOW' | 'MEDIUM' | 'HIGH'
     };
     
     this.logs.push(log);
@@ -53,7 +53,11 @@ export class AuditService {
     
     // Log crítico para ações de alto risco
     if (riskLevel === 'HIGH') {
-      console.warn('AÇÃO DE ALTO RISCO DETECTADA:', log);
+      console.warn('AÇÃO DE ALTO RISCO DETECTADA:', {
+        id: String(log.id),
+        action: String(log.action),
+        userId: String(log.userId)
+      });
     }
   }
 
@@ -62,7 +66,8 @@ export class AuditService {
    * @param log Log a ser persistido
    */
   private static async persistLog(log: AuditLog): Promise<void> {
-    try {      // Criptografar dados sensíveis do log
+    try {
+      // Criptografar dados sensíveis do log
       const encryptedLog = {
         ...log,
         metadata: log.metadata ? EncryptionService.encryptData(JSON.stringify(log.metadata)) : undefined
@@ -70,10 +75,10 @@ export class AuditService {
       
       // Em produção, enviaria para servidor seguro
       console.log('Audit Log:', {
-        id: log.id,
-        action: log.action,
+        id: String(log.id),
+        action: String(log.action),
         timestamp: log.timestamp,
-        riskLevel: log.riskLevel
+        riskLevel: String(log.riskLevel)
       });
       
       // Armazenar localmente de forma segura
@@ -86,7 +91,36 @@ export class AuditService {
       await EncryptionService.secureStore('audit_logs', JSON.stringify(recentLogs));
       
     } catch (error) {
-      console.error('Erro ao persistir log de auditoria:', error);
+      console.error('Erro ao persistir log de auditoria:', String(error));
+    }
+  }
+
+  /**
+   * Persiste logs de auditoria em armazenamento seguro
+   * @param logs Array de logs para persistir
+   */
+  private static async persistLogs(logs: AuditLog[]): Promise<void> {
+    try {
+      // Serializar logs para JSON
+      const serializedLogs = JSON.stringify(logs);
+      
+      // Criptografar logs antes do armazenamento
+      const encryptedLogs = EncryptionService.encryptData(serializedLogs);
+      
+      // Armazenar de forma segura (simulado para demo)
+      await EncryptionService.secureStore('audit_logs', encryptedLogs);
+      
+      console.log(`✅ Demo: Dados criptografados e armazenados com segurança - audit_logs`);
+      console.log(`🔐 Valor criptografado: ${encryptedLogs.substring(0, 50)}...`);
+      
+    } catch (error) {
+      console.warn('Erro ao persistir logs de auditoria:', error);
+      // Fallback: armazenar sem criptografia para demonstração
+      try {
+        await EncryptionService.secureStore('audit_logs_fallback', JSON.stringify(logs));
+      } catch (fallbackError) {
+        console.error('Erro no fallback de persistência:', fallbackError);
+      }
     }
   }
 

@@ -123,11 +123,16 @@ export class BettingMonitor {
         result: event.result
       };
 
-      // Armazenar evento criptografado
-      const encryptedEvent = {
-        ...secureEvent,
-        amount: EncryptionService.encryptData(String(secureEvent.amount))
-      };
+      // Armazenar evento (sem criptografia no desenvolvimento)
+      try {
+        const encryptedEvent = {
+          ...secureEvent,
+          amount: __DEV__ ? String(secureEvent.amount) : EncryptionService.encryptData(String(secureEvent.amount))
+        };
+      } catch (cryptoError) {
+        // Fallback para desenvolvimento sem criptografia
+        console.warn('Criptografia não disponível, usando dados não criptografados');
+      }
 
       this.events.push(secureEvent); // Manter em memória para análise
       AuditService.logAction('BETTING_EVENT_RECORDED', 'BETTING_EVENT', 'user-id', 

@@ -51,7 +51,7 @@ interface Styles {
   modalContent: ViewStyle;
   modalHeader: ViewStyle;
   modalTitle: TextStyle;
-  modalInput: ViewStyle;
+  modalInput: TextStyle;
   modalButtons: ViewStyle;
   modalButton: ViewStyle;
   modalButtonText: TextStyle;
@@ -390,7 +390,8 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
               >
                 <Text style={styles.timePickerButtonText}>{notificationPrefs.quietEnd}</Text>
               </TouchableOpacity>
-            </View>          </LinearGradient>
+            </View>
+          </LinearGradient>
         </View>
         
         {/* Seção de Demonstração Interativa */}
@@ -418,7 +419,7 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
             <View style={{ marginLeft: 16, flex: 1 }}>
               <Text style={[styles.cardTitle, { marginBottom: 4 }]}>Autenticação Multifator</Text>
               <Text style={[styles.cardDescription, { fontSize: 12 }]}>
-                Teste o sistema de MFA com SMS, email ou biometria
+                {`Teste o sistema de MFA com SMS, email ou biometria`}
               </Text>
             </View>
             <MaterialCommunityIcons name="chevron-right" size={24} color="#059669" />

@@ -79,13 +79,14 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
             />
             <Text style={styles.predictionBadge}>
               <MaterialCommunityIcons name="triangle" size={12} color="#F59E0B" />
-              {" "}Tendência Crescente
+              {` Tendência Crescente`} {/* MODIFICADO AQUI */}
             </Text>
           </View>
           <Text style={styles.predictionTitle}>Previsão para esta semana</Text>
           <Text style={styles.predictionDescription}>
             Com base no seu histórico, sua tendência para esta semana é de risco médio crescente.
-          </Text>        </LinearGradient>
+          </Text>
+        </LinearGradient>
 
         {/* Demonstração de Cybersecurity */}
         <LinearGradient
@@ -100,7 +101,7 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
             />
             <Text style={[styles.predictionBadge, { color: '#059669' }]}>
               <MaterialCommunityIcons name="shield-check" size={12} color="#059669" />
-              {" "}Protegido
+              {` Protegido`} {/* MODIFICADO AQUI */}
             </Text>
           </View>
           <Text style={[styles.predictionTitle, { color: '#059669' }]}>
