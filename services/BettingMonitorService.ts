@@ -340,6 +340,16 @@ export class BettingMonitor {
     if (!riskLevel) return this.activityEvents;
     return this.activityEvents.filter(event => event.riskLevel === riskLevel);
   }
+
+  // Retorna o valor total gasto em apostas
+  getTotalAmountSpent(): number {
+    return this.events.reduce((total, event) => total + event.amount, 0);
+  }
+
+  // Retorna todos os eventos de aposta para análise
+  getAllEvents(): BettingEvent[] {
+    return this.events;
+  }
   
   // Importa dados de transações bancárias via Open Banking
   importBankingData(transactions: BankTransaction[]): void {
@@ -374,44 +384,50 @@ export class BettingMonitor {
   
   // Gera dados de exemplo para demonstração
   generateSampleData(): void {
+    // Limpa eventos existentes para garantir que a demonstração seja consistente
+    this.events = [];
+    this.activityEvents = [];
+
     const now = new Date();
-    const yesterday = new Date(now);
-    yesterday.setDate(yesterday.getDate() - 1);
-    
     const sampleEvents: BettingEvent[] = [
       {
         id: '1',
-        amount: 500,
+        amount: 150,
         gameType: 'Roleta Online',
-        timestamp: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 2, 15),
+        // Evento de 11 meses atrás
+        timestamp: new Date(new Date().setMonth(now.getMonth() - 11)),
         result: 'loss'
       },
       {
         id: '2',
         amount: 200,
         gameType: 'Poker Online',
-        timestamp: new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 30),
+        // Evento de 8 meses atrás
+        timestamp: new Date(new Date().setMonth(now.getMonth() - 8)),
         result: 'loss'
       },
       {
         id: '3',
-        amount: 150,
+        amount: 75,
         gameType: 'Cassino',
-        timestamp: new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 45),
-        result: 'loss'
+        // Evento de 5 meses atrás
+        timestamp: new Date(new Date().setMonth(now.getMonth() - 5)),
+        result: 'win'
       },
       {
         id: '4',
         amount: 300,
         gameType: 'Apostas Esportivas',
-        timestamp: new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 0, 15),
+        // Evento de 2 meses atrás
+        timestamp: new Date(new Date().setMonth(now.getMonth() - 2)),
         result: 'loss'
       },
       {
         id: '5',
-        amount: 100,
+        amount: 120,
         gameType: 'Caça-níqueis',
-        timestamp: new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate() - 1, 3, 30),
+        // Evento do mês passado
+        timestamp: new Date(new Date().setMonth(now.getMonth() - 1)),
         result: 'win'
       }
     ];

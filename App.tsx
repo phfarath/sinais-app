@@ -20,7 +20,8 @@ import DashboardScreen from "./screens/DashboardScreen"
 import AlertScreen from "./screens/AlertScreen"
 import EducationalScreen from "./screens/EducationalScreen"
 import HelpScreen from "./screens/HelpScreen"
-import ProfileScreen from "./screens/ProfileScreen"
+import InvestmentComparisonScreen from './screens/InvestmentComparisonScreen';
+import ProfileScreen from './screens/ProfileScreen';
 import StatisticsScreen from "./screens/StatisticsScreen"
 import BreathingScreen from "./screens/BreathingScreen"
 import GoalsScreen from "./screens/GoalsScreen"
@@ -97,6 +98,10 @@ export type GoalsStackParamList = {
   Insights: undefined;
 };
 
+export type InvestmentStackParamList = {
+  InvestmentComparison: undefined;
+};
+
 export type ProfileStackParamList = {
   Profile: undefined;
   OpenFinance: undefined;
@@ -116,7 +121,54 @@ const HomeStack = createNativeStackNavigator<HomeStackParamList>();
 const MonitoringStack = createNativeStackNavigator<MonitoringStackParamList>();
 const LearnStack = createNativeStackNavigator<LearnStackParamList>();
 const GoalsStack = createNativeStackNavigator<GoalsStackParamList>();
+function GoalsNavigator() {
+  return (
+    <GoalsStack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: '#F5F8FF' },
+        headerTintColor: '#4A90E2',
+        headerShadowVisible: false,
+        headerBackTitle: 'Voltar',
+      }}>
+      <GoalsStack.Screen name="Goals" component={GoalsScreen} options={{ title: 'Metas' }} />
+      <GoalsStack.Screen name="Insights" component={InsightsScreen} options={{ title: 'Sugestões IA' }} />
+    </GoalsStack.Navigator>
+  );
+}
+
+const InvestmentStack = createNativeStackNavigator();
+function InvestmentNavigator() {
+  return (
+    <InvestmentStack.Navigator>
+      <InvestmentStack.Screen 
+        name="InvestmentComparison" 
+        component={InvestmentComparisonScreen} 
+        options={{ title: 'Apostas vs. Investimentos' }} 
+      />
+    </InvestmentStack.Navigator>
+  );
+}
+
 const ProfileStack = createNativeStackNavigator<ProfileStackParamList>();
+function ProfileNavigator() {
+  return (
+    <ProfileStack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: '#F5F8FF' },
+        headerTintColor: '#4A90E2',
+        headerShadowVisible: false,
+        headerBackTitle: 'Voltar',
+      }}>
+      <ProfileStack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Perfil' }} />
+      <ProfileStack.Screen name="OpenFinance" component={OpenFinanceScreen} options={{ title: 'Open Finance' }} />
+      <ProfileStack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Configurações' }} />
+      <ProfileStack.Screen name="DataControl" component={DataControlScreen} options={{ title: 'Controle de Dados' }} />
+      <ProfileStack.Screen name="ExplanationAudit" component={ExplanationAuditScreen} options={{ title: 'Auditoria de IA' }} />
+      <ProfileStack.Screen name="BiasAnalysis" component={BiasAnalysisScreen} options={{ title: 'Análise de Viés' }} />
+      <ProfileStack.Screen name="CrisisMode" component={CrisisModeScreen} options={{ title: 'Modo Controle' }} />
+    </ProfileStack.Navigator>
+  );
+}
 
 // Stack Navigator para a aba Início
 function HomeStackScreen() {
@@ -284,10 +336,23 @@ function MainTabNavigator() {
         component={LearnStackScreen} 
         options={{ tabBarLabel: 'Aprender' }}
       />
-      <Tab.Screen 
-        name="GoalsTab" 
-        component={GoalsStackScreen} 
-        options={{ tabBarLabel: 'Metas' }}
+      <Tab.Screen
+        name="Goals"
+        component={GoalsNavigator}
+        options={{
+          title: 'Metas',
+          headerShown: false,
+          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="flag-checkered" color={color} size={size} />,
+        }}
+      />
+      <Tab.Screen
+        name="Investment"
+        component={InvestmentNavigator}
+        options={{
+          title: 'Investir',
+          headerShown: false,
+          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="chart-arc" color={color} size={size} />,
+        }}
       />
       <Tab.Screen 
         name="ProfileTab" 
