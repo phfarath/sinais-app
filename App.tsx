@@ -1,10 +1,13 @@
-import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { StyleSheet } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { StyleSheet as RNStyleSheet } from 'react-native';
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import { Toaster } from 'sonner-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AIChatScreen from './screens/AIChatScreen'; // Import the AIChatScreen
+import { TouchableOpacity, View, Text, StyleSheet } from 'react-native'; // Import Text and alias StyleSheet
+import { useState } from 'react'; // Import useState
 
 // Importação das telas
 import SplashScreen from "./screens/SplashScreen"
@@ -75,6 +78,7 @@ export type HomeStackParamList = {
   WhyItMatters: undefined;
   Alert: undefined;
   CrisisMode: undefined;
+  AIChat: undefined; // Add AIChat to HomeStackParamList
 };
 
 export type MonitoringStackParamList = {
@@ -320,19 +324,50 @@ function RootStack() {
 }
 
 export default function App() {
+  const [isChatVisible, setIsChatVisible] = useState(false);
+
   return (
-    <SafeAreaProvider style={styles.container}>
-      <Toaster />
-      <NavigationContainer>
-        <RootStack />
-      </NavigationContainer>
-    </SafeAreaProvider>
+    <NavigationContainer>
+      <RootStack />
+      {/* Floating AI Chat Button */}
+      <TouchableOpacity 
+        style={styles.chatButton}
+        onPress={() => setIsChatVisible(true)}
+      >
+        <Text style={styles.chatButtonText}>AI</Text>
+      </TouchableOpacity>
+
+      <AIChatScreen visible={isChatVisible} onClose={() => setIsChatVisible(false)} />
+    </NavigationContainer>
   );
 }
 
-const styles = StyleSheet.create({
+// Use the aliased RNStyleSheet or ensure StyleSheet is defined correctly from react-native
+const styles = RNStyleSheet.create({
   container: {
     flex: 1,
-    userSelect: "none"
+    // userSelect: "none" // userSelect is a web-specific style, might cause issues in native
+  },
+  chatButton: {
+    position: 'absolute',
+    bottom: 80, // Adjust as needed, consider safe area insets for bottom tabs
+    right: 20,
+    backgroundColor: '#007AFF', 
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 8, 
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    zIndex: 1000, 
+  },
+  chatButtonText: {
+    color: 'white',
+    fontSize: 24,
+    fontWeight: 'bold',
   }
 });

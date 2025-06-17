@@ -4,6 +4,9 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList } from '../App';
+import { FontAwesome } from '@expo/vector-icons';
+import AIChatScreen from './AIChatScreen'; // Import the new screen
+import { useState } from 'react';
 
 type HomeScreenProps = {
   navigation: NativeStackNavigationProp<HomeStackParamList, 'Home'>;
@@ -28,11 +31,13 @@ interface Styles {
   crisisButtonText: TextStyle;
   whyButton: ViewStyle;
   whyButtonText: TextStyle;
+  aiChatButton: ViewStyle;
 }
 
 export default function HomeScreen({ navigation, route }: HomeScreenProps) {
   const insets = useSafeAreaInsets();
-  const riskProfile = route.params?.riskProfile || 'Moderado';
+  const [riskProfile, setRiskProfile] = useState(route.params?.riskProfile || 'Moderado');
+  const [isAIChatVisible, setIsAIChatVisible] = useState(false);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -132,6 +137,11 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
           <Text style={styles.whyButtonText}>Por que isso importa?</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      <AIChatScreen
+        visible={isAIChatVisible}
+        onClose={() => setIsAIChatVisible(false)}
+      />
     </View>
   );
 }
@@ -259,5 +269,21 @@ const styles = StyleSheet.create<Styles>({
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
+  },
+  aiChatButton: {
+    position: 'absolute',
+    bottom: 80, // Adjust as needed
+    right: 20,
+    backgroundColor: '#4A90E2', // Or your app's theme color
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
 });
