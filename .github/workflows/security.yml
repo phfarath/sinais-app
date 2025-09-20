@@ -1,0 +1,70 @@
+name: DevSecOps Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  sca-scan:
+    name: 'SCA Scan (Snyk)'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install Snyk
+      run: npm install -g snyk
+
+    - name: Run Snyk SCA Scan
+      # Fails the build for high severity vulnerabilities
+      run: snyk test --fail-on=high
+      continue-on-error: true # Continue to see the report even if it fails
+
+  sast-scan:
+    name: 'SAST Scan (Semgrep)'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Run Semgrep SAST Scan
+      # Uses the official Semgrep action
+      uses: returntocorp/semgrep-action@v1
+      with:
+        # Fails the build for any finding with 'ERROR' severity
+        config: 'p/default' # Use default rules, can be customized
+
+  dast-scan:
+    name: 'DAST Scan (OWASP ZAP)'
+    runs-on: ubuntu-latest
+    # Run DAST only after the other scans pass
+    needs: [sca-scan, sast-scan]
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install and run backend server
+      run: |
+        cd backend
+        npm install
+        node server.js &
+        sleep 5 # Give the server a moment to start
+
+    - name: Run ZAP Baseline Scan
+      uses: zaproxy/action-baseline@v0.10.0
+      with:
+        target: 'http://localhost:3000'
+        # Fail the build if any WARN or FAIL level issues are found
+        fail_action: true

@@ -1,0 +1,22 @@
+
+Testing d:\sinais-app...
+
+Tested 674 dependencies for known issues, found 1 issue, 7 vulnerable paths.
+
+
+Issues with no direct upgrade or patch:
+  ✗ Missing Release of Resource after Effective Lifetime [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-INFLIGHT-6095116] in inflight@1.0.6
+    introduced by react-native@0.79.3 > glob@7.2.3 > inflight@1.0.6 and 6 other path(s)
+  No upgrade or patch available
+
+
+
+Organization:      pedropontesfarath
+Package manager:   npm
+Target file:       package-lock.json
+Project name:      sinais-app
+Open source:       no
+Project path:      d:\sinais-app
+Licenses:          enabled
+
+

@@ -1,0 +1,29 @@
+┌─────────────┐
+│ Scan Status │
+└─────────────┘
+  Scanning 55 files tracked by git with 1062 Code rules:
+ 
+  Language      Rules   Files          Origin      Rules
+ ─────────────────────────────        ───────────────────
+  <multilang>      48      55          Community    1062
+  ts              166      40
+  json              4       5
+
+  ---------------------------------------- 100% 0:00:02                                                                        
+
+
+
+┌──────────────┐
+│ Scan Summary │
+└──────────────┘
+✅ Scan completed successfully.
+ • Findings: 0 (0 blocking)
+ • Rules run: 217
+ • Targets scanned: 55
+ • Parsed lines: ~100.0%
+ • Scan skipped:
+   ◦ Files matching .semgrepignore patterns: 1
+ • Scan was limited to files tracked by git
+ • For a detailed list of skipped files and lines, run semgrep with the --verbose flag
+Ran 217 rules on 55 files: 0 findings.
+(need more rules? `semgrep login` for additional free Semgrep Registry rules)
