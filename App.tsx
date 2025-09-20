@@ -1,10 +1,12 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { StyleSheet } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import { Toaster } from 'sonner-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+// Importe o contexto de autenticação e o hook
+import { AuthProvider, useAuth } from './contexts/AuthContext'; // Ajuste o caminho se necessário
 
 // Importação das telas
 import SplashScreen from "./screens/SplashScreen"
@@ -132,22 +134,22 @@ function HomeStackScreen() {
   );
 }
 
-// Stack Navigator para a aba Monitoramento
-function MonitoringStackScreen() {
-  return (
-    <MonitoringStack.Navigator
-      screenOptions={{
-        headerStyle: { backgroundColor: '#F5F8FF' },
-        headerTintColor: '#4A90E2',
-        headerShadowVisible: false,
-        headerBackTitle: 'Voltar',
-      }}>
-      <MonitoringStack.Screen name="Monitoring" component={MonitoringScreen} options={{ title: 'Monitoramento' }} />
-      <MonitoringStack.Screen name="Breathing" component={BreathingScreen} options={{ title: 'Respiração' }} />
-      <MonitoringStack.Screen name="Statistics" component={StatisticsScreen} options={{ title: 'Estatísticas' }} />
-    </MonitoringStack.Navigator>
-  );
-}
+// // Stack Navigator para a aba Monitoramento
+// function MonitoringStackScreen() {
+//   return (
+//     <MonitoringStack.Navigator
+//       screenOptions={{
+//         headerStyle: { backgroundColor: '#F5F8FF' },
+//         headerTintColor: '#4A90E2',
+//         headerShadowVisible: false,
+//         headerBackTitle: 'Voltar',
+//       }}>
+//       <MonitoringStack.Screen name="Monitoring" component={MonitoringScreen} options={{ title: 'Monitoramento' }} />
+//       <MonitoringStack.Screen name="Breathing" component={BreathingScreen} options={{ title: 'Respiração' }} />
+//       <MonitoringStack.Screen name="Statistics" component={StatisticsScreen} options={{ title: 'Estatísticas' }} />
+//     </MonitoringStack.Navigator>
+//   );
+// }
 
 // Stack Navigator para a aba Aprender
 function LearnStackScreen() {
@@ -270,11 +272,11 @@ function MainTabNavigator() {
           tabBarBadge: undefined // Remover comentário se precisar de notificações/badges
         }}
       />
-      <Tab.Screen 
+      {/* <Tab.Screen 
         name="MonitoringTab" 
         component={MonitoringStackScreen} 
         options={{ tabBarLabel: 'Monitoramento' }}
-      />
+      /> */}
       <Tab.Screen 
         name="LearnTab" 
         component={LearnStackScreen} 
@@ -294,21 +296,41 @@ function MainTabNavigator() {
   );
 }
 
+// Componente que decide qual fluxo de navegação mostrar
+function AppNavigator() {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    // Pode ser uma tela de splash mais elaborada
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  return (
+    <NavigationContainer>
+      {user ? <RootStack /> : <AuthStack />}
+    </NavigationContainer>
+  );
+}
+
 // Stack Navigator principal
 function RootStack() {
   return (
     <Stack.Navigator
-      initialRouteName="Splash"
+      // A tela inicial agora é a MainTabs, pois o usuário já está logado
+      initialRouteName="MainTabs"
       screenOptions={{
         headerShown: false,
       }}>
-      <Stack.Screen name="Splash" component={SplashScreen} />
-      <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-      <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="MFA" component={MFAScreen} options={{ headerShown: true, title: 'Verificação MFA' }} />
+      {/* As telas de autenticação são movidas para o AuthStack */}
+      <Stack.Screen name="MainTabs" component={MainTabNavigator} />
       <Stack.Screen name="QuizIntro" component={QuizIntroScreen} options={{ headerShown: true }} />
       <Stack.Screen name="Quiz" component={QuizScreen} options={{ headerShown: true }} />
-      <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+      {/* O MFA pode ser necessário aqui se for um passo pós-login em certos cenários */}
+      <Stack.Screen name="MFA" component={MFAScreen} options={{ headerShown: true, title: 'Verificação MFA' }} />
       <Stack.Screen name="Community" component={CommunityScreen} options={{ headerShown: true }} />
       <Stack.Screen name="DataControl" component={DataControlScreen} options={{ headerShown: true, title: 'Controle de Dados' }} />
       <Stack.Screen name="ExplanationAudit" component={ExplanationAuditScreen} options={{ headerShown: true, title: 'Auditoria de IA' }} />
@@ -319,13 +341,29 @@ function RootStack() {
   );
 }
 
+// Stack para o fluxo de autenticação
+function AuthStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Splash"
+      screenOptions={{ headerShown: false }}
+    >
+      <Stack.Screen name="Splash" component={SplashScreen} />
+      <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="MFA" component={MFAScreen} options={{ headerShown: true, title: 'Verificação MFA' }} />
+    </Stack.Navigator>
+  );
+}
+
 export default function App() {
   return (
     <SafeAreaProvider style={styles.container}>
-      <Toaster />
-      <NavigationContainer>
-        <RootStack />
-      </NavigationContainer>
+      {/* Envolvemos o app com o AuthProvider */}
+      <AuthProvider>
+        <Toaster />
+        <AppNavigator />
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }
