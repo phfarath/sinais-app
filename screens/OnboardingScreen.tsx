@@ -1,4 +1,4 @@
-// filepath: d:\sinais-app-certo\sinais-app\screens\OnboardingScreen.tsx
+// filepath: d:\\sinais-app-certo\\sinais-app\\screens\\OnboardingScreen.tsx
 import { useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ViewStyle, TextStyle, FlatList, Dimensions, Animated } from 'react-native';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
@@ -37,6 +37,7 @@ interface Styles {
   nextButtonText: TextStyle;
   skipButton: ViewStyle;
   skipButtonText: TextStyle;
+  startButton: ViewStyle; // Added startButton to Styles interface
 }
 
 const { width } = Dimensions.get('window');
@@ -94,24 +95,66 @@ export default function OnboardingScreen({ navigation }: OnboardingScreenProps) 
 
   const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
 
+  const renderItem = ({ item, index }: { item: OnboardingSlide, index: number }) => {
+    const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
+
+    const iconTranslateY = scrollX.interpolate({
+      inputRange,
+      outputRange: [50, 0, -50],
+      extrapolate: 'clamp',
+    });
+
+    const iconOpacity = scrollX.interpolate({
+      inputRange,
+      outputRange: [0.3, 1, 0.3],
+      extrapolate: 'clamp',
+    });
+
+    const titleScale = scrollX.interpolate({
+      inputRange,
+      outputRange: [0.8, 1, 0.8],
+      extrapolate: 'clamp',
+    });
+
+    const titleOpacity = scrollX.interpolate({
+      inputRange,
+      outputRange: [0.5, 1, 0.5],
+      extrapolate: 'clamp',
+    });
+
+    const descriptionTranslateY = scrollX.interpolate({
+      inputRange,
+      outputRange: [30, 0, -30],
+      extrapolate: 'clamp',
+    });
+    
+    const descriptionOpacity = scrollX.interpolate({
+      inputRange,
+      outputRange: [0.5, 1, 0.5],
+      extrapolate: 'clamp',
+    });
+
+    return (
+      <LinearGradient
+        colors={['#F5F8FF', '#E0EAFC', '#D0E0F8']} // Subtle gradient change
+        style={styles.slideContainer}
+      >
+        <View style={styles.slideContent}>
+          <Animated.View style={[styles.iconContainer, { transform: [{ translateY: iconTranslateY }], opacity: iconOpacity }]}>
+            <MaterialCommunityIcons name={item.iconName} size={80} color="#4A90E2" />
+          </Animated.View>
+          <Animated.Text style={[styles.title, { transform: [{ scale: titleScale }], opacity: titleOpacity }]}>{item.title}</Animated.Text>
+          <Animated.Text style={[styles.description, { transform: [{ translateY: descriptionTranslateY }], opacity: descriptionOpacity }]}>{item.description}</Animated.Text>
+        </View>
+      </LinearGradient>
+    );
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <FlatList
         data={slides}
-        renderItem={({ item }) => (
-          <LinearGradient
-            colors={['#F5F8FF', '#EFF6FF']}
-            style={styles.slideContainer}
-          >
-            <View style={styles.slideContent}>
-              <View style={styles.iconContainer}>
-                <MaterialCommunityIcons name={item.iconName} size={80} color="#4A90E2" />
-              </View>
-              <Text style={styles.title}>{item.title}</Text>
-              <Text style={styles.description}>{item.description}</Text>
-            </View>
-          </LinearGradient>
-        )}
+        renderItem={renderItem}
         horizontal
         pagingEnabled
         bounces={false}
@@ -132,13 +175,13 @@ export default function OnboardingScreen({ navigation }: OnboardingScreenProps) 
           
           const dotWidth = scrollX.interpolate({
             inputRange,
-            outputRange: [10, 20, 10],
+            outputRange: [10, 25, 10], // Make active dot wider
             extrapolate: 'clamp',
           });
           
-          const opacity = scrollX.interpolate({
+          const dotBackgroundColor = scrollX.interpolate({
             inputRange,
-            outputRange: [0.3, 1, 0.3],
+            outputRange: ['#AECBFA', '#4A90E2', '#AECBFA'], // Lighter color for inactive dots
             extrapolate: 'clamp',
           });
           
@@ -147,14 +190,14 @@ export default function OnboardingScreen({ navigation }: OnboardingScreenProps) 
               key={index} 
               style={[
                 styles.paginationDot, 
-                { width: dotWidth, opacity }
+                { width: dotWidth, backgroundColor: dotBackgroundColor } // Removed opacity, using color change
               ]} 
             />
           );
         })}
       </View>
 
-      <SafeAreaView style={styles.buttonContainer}>
+      <SafeAreaView style={[styles.buttonContainer, { paddingBottom: insets.bottom > 0 ? insets.bottom : 30 }]}>
         <TouchableOpacity 
           style={styles.skipButton} 
           onPress={handleSkip}
@@ -163,14 +206,14 @@ export default function OnboardingScreen({ navigation }: OnboardingScreenProps) 
         </TouchableOpacity>
 
         <TouchableOpacity 
-          style={styles.nextButton} 
+          style={[styles.nextButton, currentIndex === slides.length - 1 ? styles.startButton : {}]} 
           onPress={handleNext}
         >
           <Text style={styles.nextButtonText}>
             {currentIndex === slides.length - 1 ? 'Começar' : 'Próximo'}
           </Text>
           <MaterialCommunityIcons 
-            name={currentIndex === slides.length - 1 ? 'check' : 'arrow-right'} 
+            name={currentIndex === slides.length - 1 ? 'check-circle-outline' : 'arrow-right-circle-outline'} 
             size={20} 
             color="#FFFFFF" 
           />
@@ -200,7 +243,7 @@ const styles = StyleSheet.create<Styles>({
     width: 160,
     height: 160,
     borderRadius: 80,
-    backgroundColor: 'white',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)', // Slightly transparent white
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 40,
@@ -208,24 +251,24 @@ const styles = StyleSheet.create<Styles>({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
-    elevation: 5,
+    elevation: 8, // Increased shadow
   },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#1F2937',
+    fontSize: 28, // Slightly larger
+    fontWeight: 'bold', // Bolder
+    color: '#1A2E4C', // Darker blue
     textAlign: 'center',
     marginBottom: 16,
   },
   description: {
     fontSize: 16,
-    color: '#6B7280',
+    color: '#4A5C7A', // Softer dark blue
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 26, // Increased line height
   },
   paginationContainer: {
     position: 'absolute',
-    bottom: 120,
+    bottom: 130, // Adjusted position
     flexDirection: 'row',
     width: '100%',
     justifyContent: 'center',
@@ -234,7 +277,7 @@ const styles = StyleSheet.create<Styles>({
   paginationDot: {
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#4A90E2',
+    // backgroundColor is now animated
     marginHorizontal: 8,
   },
   buttonContainer: {
@@ -245,18 +288,25 @@ const styles = StyleSheet.create<Styles>({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingBottom: 30,
+    paddingBottom: 30, // Default padding, will be overridden by insets if available
     paddingTop: 20,
-    backgroundColor: 'transparent',
+    backgroundColor: 'transparent', // Ensure it's transparent for gradient to show
+    borderTopWidth: 1, // Subtle separator
+    borderTopColor: 'rgba(0,0,0,0.05)', // Light separator color
   },
   nextButton: {
     backgroundColor: '#4A90E2',
     paddingVertical: 16,
     paddingHorizontal: 32,
-    borderRadius: 12,
+    borderRadius: 30, // More rounded
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10, // Increased gap
+    shadowColor: '#4A90E2',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 6,
   },
   nextButtonText: {
     color: 'white',
@@ -264,11 +314,17 @@ const styles = StyleSheet.create<Styles>({
     fontWeight: '600',
   },
   skipButton: {
-    padding: 16,
+    paddingVertical: 16, // Consistent padding
+    paddingHorizontal: 20,
+    borderRadius: 30, // More rounded
   },
   skipButtonText: {
-    color: '#6B7280',
+    color: '#4A5C7A', // Softer dark blue
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600', // Slightly bolder
   },
+  startButton: { // Style for the "Começar" button
+    backgroundColor: '#34D399', // A nice green color
+    shadowColor: '#34D399',
+  }
 });

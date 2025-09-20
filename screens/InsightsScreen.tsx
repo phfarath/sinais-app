@@ -28,10 +28,16 @@ interface Styles {
   scrollView: ViewStyle;
   insightCard: ViewStyle;
   insightContent: ViewStyle;
+  iconContainer: ViewStyle; // Added this line
+  contentContainer: ViewStyle; // Added this line
   insightTitle: TextStyle;
   insightDescription: TextStyle;
   actionButton: ViewStyle;
   actionText: TextStyle;
+  section: ViewStyle; // Added this line
+  sectionTitle: TextStyle; // Added this line
+  explanationCard: ViewStyle; // Added this line
+  explanationText: TextStyle; // Added this line
 }
 
 const insights: Insight[] = [
@@ -103,40 +109,45 @@ export default function InsightsScreen({ navigation }: InsightsScreenProps) {
       </Text>
 
       <ScrollView style={styles.scrollView}>
-        {insights.map((insight) => (
-          <View 
-            key={insight.id} 
-            style={[
-              styles.insightCard,
-              { borderLeftColor: getInsightColor(insight.type) }
-            ]}
-          >
-            <MaterialCommunityIcons 
-              name={insight.icon} 
-              size={24} 
-              color={getInsightColor(insight.type)} 
-            />
-            <View style={styles.insightContent}>
+        {insights.map((insight, index) => (
+          <View key={`insight-${insight.id}-${index}`} style={[
+            styles.insightCard,
+            { borderLeftColor: getInsightColor(insight.type) }
+          ]}>
+            <View style={[
+              styles.iconContainer,
+              { backgroundColor: getInsightColor(insight.type) + '20' }
+            ]}>
+              <MaterialCommunityIcons 
+                name={insight.icon as any} 
+                size={24} 
+                color={getInsightColor(insight.type)} 
+              />
+            </View>
+            
+            <View style={styles.contentContainer}>
               <Text style={styles.insightTitle}>{insight.title}</Text>
-              <Text style={styles.insightDescription}>
-                {insight.description}
-              </Text>
+              <Text style={styles.insightDescription}>{insight.description}</Text>
+              
               <TouchableOpacity style={styles.actionButton}>
-                <Text style={[
-                  styles.actionText,
-                  { color: getInsightColor(insight.type) }
-                ]}>
-                  {insight.action}
-                </Text>
-                <MaterialCommunityIcons 
-                  name="chevron-right" 
-                  size={20} 
-                  color={getInsightColor(insight.type)} 
-                />
+                <Text style={styles.actionText}>{insight.action}</Text>
+                <MaterialCommunityIcons name="arrow-right" size={16} color="#4A90E2" />
               </TouchableOpacity>
             </View>
           </View>
         ))}
+        
+        {/* Seção de explicações da IA */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Como nossa IA analisa seus dados</Text>
+          <View style={styles.explanationCard}>
+            <MaterialCommunityIcons name="brain" size={32} color="#4A90E2" />
+            <Text style={styles.explanationText}>
+              Nossa inteligência artificial analisa padrões comportamentais de forma ética e transparente, 
+              sempre respeitando sua privacidade e fornecendo explicações claras sobre suas conclusões.
+            </Text>
+          </View>
+        </View>
       </ScrollView>
     </View>
   );
@@ -178,6 +189,16 @@ const styles = StyleSheet.create<Styles>({
     elevation: 2,
   },
   insightContent: {
+    // Add styles for insightContent if needed, or leave empty to satisfy the type.
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  contentContainer: {
     flex: 1,
   },
   insightTitle: {
@@ -200,5 +221,36 @@ const styles = StyleSheet.create<Styles>({
     fontSize: 14,
     fontWeight: '600',
     marginRight: 4,
+  },
+  section: {
+    marginTop: 32,
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 16,
+  },
+  explanationCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 8,
+    backgroundColor: '#F0F4FF',
+  },
+  explanationText: {
+    fontSize: 14,
+    color: '#334155',
+    lineHeight: 20,
+    marginLeft: 12,
+    flex: 1,
   },
 });

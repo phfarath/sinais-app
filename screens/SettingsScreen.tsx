@@ -17,11 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
-
-type RootStackParamList = {
-  Settings: undefined;
-  Profile: undefined;
-};
+import { RootStackParamList } from '../App';
 
 type SettingsScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Settings'>;
@@ -55,7 +51,7 @@ interface Styles {
   modalContent: ViewStyle;
   modalHeader: ViewStyle;
   modalTitle: TextStyle;
-  modalInput: ViewStyle;
+  modalInput: TextStyle;
   modalButtons: ViewStyle;
   modalButton: ViewStyle;
   modalButtonText: TextStyle;
@@ -396,6 +392,94 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
               </TouchableOpacity>
             </View>
           </LinearGradient>
+        </View>
+        
+        {/* Seção de Demonstração Interativa */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>🚀 Demonstrações Interativas</Text>
+            <TouchableOpacity 
+            style={[styles.card, { backgroundColor: '#EFF6FF', flexDirection: 'row', alignItems: 'center' }]}
+            onPress={() => navigation.navigate('DataControl')}
+          >
+            <MaterialCommunityIcons name="shield-account" size={24} color="#4A90E2" />
+            <View style={{ marginLeft: 16, flex: 1 }}>
+              <Text style={[styles.cardTitle, { marginBottom: 4 }]}>Controle de Dados LGPD</Text>
+              <Text style={[styles.cardDescription, { fontSize: 12 }]}>
+                Gerencie permissões, exporte dados e configure privacidade
+              </Text>
+            </View>
+            <MaterialCommunityIcons name="chevron-right" size={24} color="#4A90E2" />
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.card, { backgroundColor: '#F0FDF4', flexDirection: 'row', alignItems: 'center' }]}
+            onPress={() => navigation.navigate('MFA', { userId: 'demo-user', method: 'sms' })}
+          >
+            <MaterialCommunityIcons name="two-factor-authentication" size={24} color="#059669" />
+            <View style={{ marginLeft: 16, flex: 1 }}>
+              <Text style={[styles.cardTitle, { marginBottom: 4 }]}>Autenticação Multifator</Text>
+              <Text style={[styles.cardDescription, { fontSize: 12 }]}>
+                {`Teste o sistema de MFA com SMS, email ou biometria`}
+              </Text>
+            </View>
+            <MaterialCommunityIcons name="chevron-right" size={24} color="#059669" />
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.card, { backgroundColor: '#FEF3C7', flexDirection: 'row', alignItems: 'center' }]}
+            onPress={() => navigation.navigate('ExplanationAudit')}
+          >
+            <MaterialCommunityIcons name="brain" size={24} color="#D97706" />
+            <View style={{ marginLeft: 16, flex: 1 }}>
+              <Text style={[styles.cardTitle, { marginBottom: 4 }]}>Auditoria de IA Explicável</Text>
+              <Text style={[styles.cardDescription, { fontSize: 12 }]}>
+                Veja como as decisões da IA são explicadas e auditadas
+              </Text>
+            </View>
+            <MaterialCommunityIcons name="chevron-right" size={24} color="#D97706" />
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.card, { backgroundColor: '#FEF2F2', flexDirection: 'row', alignItems: 'center' }]}
+            onPress={() => navigation.navigate('BiasAnalysis')}
+          >
+            <MaterialCommunityIcons name="scale-balance" size={24} color="#DC2626" />
+            <View style={{ marginLeft: 16, flex: 1 }}>
+              <Text style={[styles.cardTitle, { marginBottom: 4 }]}>Análise de Viés</Text>
+              <Text style={[styles.cardDescription, { fontSize: 12 }]}>
+                Execute análise completa de viés e equidade algoritmica
+              </Text>
+            </View>
+            <MaterialCommunityIcons name="chevron-right" size={24} color="#DC2626" />
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.card, { backgroundColor: '#F0F9FF', flexDirection: 'row', alignItems: 'center' }]}
+            onPress={() => navigation.navigate('CybersecurityDemo')}
+          >
+            <MaterialCommunityIcons name="security" size={24} color="#0284C7" />
+            <View style={{ marginLeft: 16, flex: 1 }}>
+              <Text style={[styles.cardTitle, { marginBottom: 4 }]}>Demo Geral Cybersecurity</Text>
+              <Text style={[styles.cardDescription, { fontSize: 12 }]}>
+                Demonstração completa de todos os critérios de segurança
+              </Text>
+            </View>
+            <MaterialCommunityIcons name="chevron-right" size={24} color="#0284C7" />
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.card, { backgroundColor: '#FEF3C7', flexDirection: 'row', alignItems: 'center' }]}
+            onPress={() => navigation.navigate('CryptographyDemo')}
+          >
+            <MaterialCommunityIcons name="shield-key" size={24} color="#D97706" />
+            <View style={{ marginLeft: 16, flex: 1 }}>
+              <Text style={[styles.cardTitle, { marginBottom: 4 }]}>Demo Criptografia Detalhada</Text>
+              <Text style={[styles.cardDescription, { fontSize: 12 }]}>
+                Teste criptografia AES e proteção XSS com exemplos visuais
+              </Text>
+            </View>
+            <MaterialCommunityIcons name="chevron-right" size={24} color="#D97706" />
+          </TouchableOpacity>
         </View>
         
         {/* Botão Salvar */}

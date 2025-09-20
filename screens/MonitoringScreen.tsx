@@ -126,14 +126,7 @@ export default function MonitoringScreen({ navigation }: MonitoringScreenProps) 
           <Text style={styles.breathingButtonText}>Exercício de Respiração</Text>
         </TouchableOpacity>
         
-        {/* Botão Conectar com o banco */}
-        <TouchableOpacity 
-          style={styles.connectBankButton}
-          onPress={() => navigation.navigate('OpenFinance')}
-        >
-          <MaterialCommunityIcons name="bank" size={24} color="white" />
-          <Text style={styles.connectBankText}>Conectar com o banco</Text>
-        </TouchableOpacity>
+        
         
         {/* Seção de Estatísticas */}
         <View style={styles.statsSection}>
@@ -201,7 +194,7 @@ export default function MonitoringScreen({ navigation }: MonitoringScreenProps) 
             <FlatList
               data={filteredActivities}
               renderItem={renderActivityItem}
-              keyExtractor={(item) => item.id}
+              keyExtractor={(item, index) => `${item.id}-${index}`} // Garantir keys únicas
               contentContainerStyle={styles.activityList}
               showsVerticalScrollIndicator={false}
               scrollEnabled={false}

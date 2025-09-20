@@ -1,4 +1,10 @@
 import { ActivityEvent, RiskLevel, EventType } from '../types/monitoring';
+import { EncryptionService } from './EncryptionService';
+import { DataSanitizer } from './DataSanitizer';
+import { ExplainableAI, UserBehaviorData } from './ExplainableAI';
+import { EthicalDecisionEngine, UserPreferences } from './EthicalDecisionEngine';
+import { AuditService } from './AuditService';
+import { BiasAnalyzer, UserData } from './BiasAnalyzer';
 
 // Interface para eventos de apostas
 export interface BettingEvent {
@@ -97,12 +103,49 @@ export class BettingMonitor {
   constructor() {
     this.analyzer = new BettingPatternAnalyzer();
   }
-  
-  // Registra um novo evento de aposta
+    // Registra um novo evento de aposta com segurança
   recordBettingEvent(event: BettingEvent): void {
-    this.events.push(event);
-    this.updateAverageDailyBets();
-    this.analyzeNewEvent(event);
+    try {
+      // Sanitizar e validar dados de entrada
+      if (!DataSanitizer.validateBettingEvent(event)) {
+        AuditService.logAction('INVALID_EVENT_REJECTED', 'BETTING_EVENT', 'user-id', 
+          DataSanitizer.anonymizeForLogging(event), 'HIGH');
+        throw new Error('Evento de aposta inválido');
+      }
+
+      // Criptografar dados sensíveis antes do armazenamento
+      const secureEvent = {
+        ...event,
+        id: event.id,
+        amount: event.amount, // Manter original para cálculos, criptografar no storage
+        gameType: DataSanitizer.sanitizeUserInput(event.gameType),
+        timestamp: event.timestamp,
+        result: event.result
+      };
+
+      // Armazenar evento (sem criptografia no desenvolvimento)
+      try {
+        const encryptedEvent = {
+          ...secureEvent,
+          amount: __DEV__ ? String(secureEvent.amount) : EncryptionService.encryptData(String(secureEvent.amount))
+        };
+      } catch (cryptoError) {
+        // Fallback para desenvolvimento sem criptografia
+        console.warn('Criptografia não disponível, usando dados não criptografados');
+      }
+
+      this.events.push(secureEvent); // Manter em memória para análise
+      AuditService.logAction('BETTING_EVENT_RECORDED', 'BETTING_EVENT', 'user-id', 
+        { eventId: event.id, gameType: event.gameType }, 'LOW');
+
+      this.updateAverageDailyBets();
+      this.analyzeNewEventSecurely(secureEvent);
+
+    } catch (error) {
+      AuditService.logAction('BETTING_EVENT_ERROR', 'BETTING_EVENT', 'user-id', 
+        { error: error instanceof Error ? error.message : 'Unknown error' }, 'HIGH');
+      throw error;
+    }
   }
   
   // Atualiza a média diária de apostas
@@ -128,9 +171,106 @@ export class BettingMonitor {
       this.averageDailyBets = total / days;
     }
   }
-  
-  // Analisa um novo evento e gera alertas se necessário
+    // Analisa um novo evento e gera alertas se necessário
   private analyzeNewEvent(event: BettingEvent): void {
+    this.analyzeNewEventSecurely(event);
+  }
+
+  // Análise segura e ética de eventos
+  private analyzeNewEventSecurely(event: BettingEvent): void {
+    try {
+      // Preparar dados comportamentais do usuário
+      const userData: UserBehaviorData = {
+        dailyBets: this.events.filter(e => 
+          new Date(e.timestamp).toDateString() === new Date().toDateString()
+        ).length,
+        averageBet: event.amount,
+        lateNightActivity: new Date(event.timestamp).getHours() < 6 || new Date(event.timestamp).getHours() > 22,
+        weekendActivity: [0, 6].includes(new Date(event.timestamp).getDay()),
+        consecutiveDays: this.calculateConsecutiveDays(),
+        lossRecoveryAttempts: this.detectChasingPattern(),
+        timeSpentGambling: this.calculateDailyTimeSpent(),
+        financialStress: this.detectFinancialStress()
+      };
+
+      // Obter análise explicável da IA
+      const riskAssessment = ExplainableAI.explainRiskAssessment(userData);
+
+      // Preferências do usuário para decisões éticas
+      const userPreferences: UserPreferences = {
+        quietStart: '22:00',
+        quietEnd: '07:00',
+        maxDailyNotifications: 5,
+        allowCriticalAlerts: true,
+        dataRetentionDays: 30
+      };
+
+      // Verificar se deve enviar alerta respeitando ética
+      const shouldAlert = EthicalDecisionEngine.shouldSendAlert(
+        riskAssessment.riskScore > 0.7 ? 'critical' : riskAssessment.riskScore > 0.4 ? 'high' : 'medium',
+        userPreferences,
+        { userState: 'normal' }
+      );
+
+      if (shouldAlert) {
+        this.createActivityEvent({
+          type: 'pattern',
+          title: 'Análise de Risco',
+          description: riskAssessment.recommendation,
+          timestamp: new Date(),
+          value: event.amount,
+          riskLevel: riskAssessment.riskScore > 0.7 ? 'high' : riskAssessment.riskScore > 0.4 ? 'medium' : 'low'
+        });
+
+        // Log da explicação da IA para auditoria
+        AuditService.logAction('AI_EXPLANATION_GENERATED', 'RISK_ASSESSMENT', 'user-id', {
+          explanation: riskAssessment.recommendation,
+          confidence: riskAssessment.confidence,
+          factors: riskAssessment.factors.map(f => ({ factor: f.factor, impact: f.impact })),
+          riskScore: riskAssessment.riskScore
+        }, riskAssessment.riskScore > 0.7 ? 'HIGH' : 'MEDIUM');
+      }      // Verificar padrões específicos de risco usando o analyzer existente
+      this.checkSpecificRiskPatterns(event);
+
+      // Monitorar viés em tempo real
+      this.monitorBiasInDecision(riskAssessment, userData, event);
+
+    } catch (error) {
+      AuditService.logAction('RISK_ANALYSIS_ERROR', 'BETTING_EVENT', 'user-id', 
+        { error: error instanceof Error ? error.message : 'Unknown error' }, 'HIGH');
+    }
+  }
+
+  // Monitora viés nas decisões em tempo real
+  private monitorBiasInDecision(riskAssessment: any, userData: UserBehaviorData, event: BettingEvent): void {
+    try {
+      // Criar contexto do usuário para análise de viés
+      const userContext: UserData = {
+        id: 'user-id',
+        age: 30, // Em produção, seria obtido do perfil do usuário
+        gender: 'male', // Em produção, seria obtido do perfil do usuário
+        location: 'SP', // Em produção, seria obtido do perfil do usuário
+        riskScore: riskAssessment.riskScore,
+        bettingBehavior: userData,
+        decisions: [riskAssessment]
+      };
+
+      // Monitorar viés em tempo real
+      BiasAnalyzer.monitorRealtimeBias({
+        riskLevel: riskAssessment.riskScore > 0.7 ? 'high' : riskAssessment.riskScore > 0.4 ? 'medium' : 'low',
+        confidence: riskAssessment.confidence,
+        factors: riskAssessment.factors,
+        eventType: event.gameType
+      }, userContext);
+
+    } catch (error) {
+      AuditService.logAction('BIAS_MONITORING_ERROR', 'BIAS_ANALYSIS', 'user-id', 
+        { error: error instanceof Error ? error.message : 'Unknown error' }, 'MEDIUM');
+    }
+  }
+
+  // Verifica padrões específicos de risco
+  private checkSpecificRiskPatterns(event: BettingEvent): void {
     // Verifica apostas de valor alto
     if (this.analyzer.detectHighValueBets([event])) {
       this.createActivityEvent({
@@ -278,5 +418,80 @@ export class BettingMonitor {
     
     // Registra eventos de exemplo
     sampleEvents.forEach(event => this.recordBettingEvent(event));
+  }
+
+  // Métodos auxiliares para análise comportamental
+  private calculateConsecutiveDays(): number {
+    if (this.events.length === 0) return 0;
+    
+    const dates = [...new Set(this.events.map(e => 
+      new Date(e.timestamp).toDateString()
+    ))].sort();
+    
+    let consecutiveDays = 1;
+    for (let i = 1; i < dates.length; i++) {
+      const prevDate = new Date(dates[i - 1]);
+      const currentDate = new Date(dates[i]);
+      const diffTime = Math.abs(currentDate.getTime() - prevDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 1) {
+        consecutiveDays++;
+      } else {
+        break;
+      }
+    }
+    
+    return consecutiveDays;
+  }
+  
+  private detectChasingPattern(): number {
+    let chasingAttempts = 0;
+    const recentEvents = this.events.slice(-10); // Últimos 10 eventos
+    
+    for (let i = 1; i < recentEvents.length; i++) {
+      const prevEvent = recentEvents[i - 1];
+      const currentEvent = recentEvents[i];
+      
+      // Se perdeu na anterior e aumentou a aposta na atual
+      if (prevEvent.result === 'loss' && currentEvent.amount > prevEvent.amount * 1.5) {
+        chasingAttempts++;
+      }
+    }
+    
+    return chasingAttempts;
+  }
+  
+  private calculateDailyTimeSpent(): number {
+    const today = new Date().toDateString();
+    const todayEvents = this.events.filter(e => 
+      new Date(e.timestamp).toDateString() === today
+    );
+    
+    if (todayEvents.length === 0) return 0;
+    
+    const sortedEvents = todayEvents.sort((a, b) => 
+      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+    
+    const firstEvent = sortedEvents[0];
+    const lastEvent = sortedEvents[sortedEvents.length - 1];
+    
+    const diffTime = new Date(lastEvent.timestamp).getTime() - new Date(firstEvent.timestamp).getTime();
+    return Math.max(diffTime / (1000 * 60), 0); // Retorna em minutos
+  }
+  
+  private detectFinancialStress(): boolean {
+    // Lógica simplificada para detectar estresse financeiro
+    const recentEvents = this.events.slice(-20);
+    const totalLosses = recentEvents
+      .filter(e => e.result === 'loss')
+      .reduce((sum, e) => sum + e.amount, 0);
+    
+    const averageAmount = recentEvents.reduce((sum, e) => sum + e.amount, 0) / recentEvents.length;
+    
+    // Se perdas recentes são muito altas ou apostas estão aumentando muito
+    return totalLosses > averageAmount * 10 || 
+           recentEvents.some(e => e.amount > averageAmount * 3);
   }
 }

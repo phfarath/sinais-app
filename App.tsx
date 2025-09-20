@@ -1,15 +1,18 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { StyleSheet } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import { Toaster } from 'sonner-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+// Importe o contexto de autenticação e o hook
+import { AuthProvider, useAuth } from './contexts/AuthContext'; // Ajuste o caminho se necessário
 
 // Importação das telas
 import SplashScreen from "./screens/SplashScreen"
 import OnboardingScreen from "./screens/OnboardingScreen"
 import LoginScreen from "./screens/LoginScreen"
+import MFAScreen from "./screens/MFAScreen"
 import QuizIntroScreen from "./screens/QuizIntroScreen"
 import QuizScreen from "./screens/QuizScreen"
 import DashboardScreen from "./screens/DashboardScreen"
@@ -29,11 +32,19 @@ import SettingsScreen from "./screens/SettingsScreen"
 import MonitoringScreen from "./screens/MonitoringScreen"
 import HomeScreen from "./screens/HomeScreen"
 
+// Telas de Cybersecurity
+import DataControlScreen from "./screens/DataControlScreen"
+import ExplanationAuditScreen from "./screens/ExplanationAuditScreen"
+import BiasAnalysisScreen from "./screens/BiasAnalysisScreen"
+import CybersecurityDemoScreen from "./screens/CybersecurityDemoScreen"
+import CryptographyDemoScreen from "./screens/CryptographyDemoScreen"
+
 // Definindo o tipo dos parâmetros para a navegação
 export type RootStackParamList = {
   Splash: undefined;
   Onboarding: undefined;
   Login: undefined;
+  MFA: { userId: string; method?: 'sms' | 'email' | 'authenticator' };
   QuizIntro: undefined;
   Quiz: undefined;
   MainTabs: undefined;
@@ -53,6 +64,11 @@ export type RootStackParamList = {
   Settings: undefined;
   Monitoring: undefined;
   Home: undefined;
+  DataControl: undefined;
+  ExplanationAudit: undefined;
+  BiasAnalysis: undefined;
+  CybersecurityDemo: undefined;
+  CryptographyDemo: undefined;
 };
 
 // Tipos para os navigators de tabs
@@ -84,6 +100,9 @@ export type ProfileStackParamList = {
   OpenFinance: undefined;
   Settings: undefined;
   CrisisMode: undefined;
+  DataControl: undefined;
+  ExplanationAudit: undefined;
+  BiasAnalysis: undefined;
 };
 
 // Criando o Stack Navigator com os tipos definidos
@@ -115,22 +134,22 @@ function HomeStackScreen() {
   );
 }
 
-// Stack Navigator para a aba Monitoramento
-function MonitoringStackScreen() {
-  return (
-    <MonitoringStack.Navigator
-      screenOptions={{
-        headerStyle: { backgroundColor: '#F5F8FF' },
-        headerTintColor: '#4A90E2',
-        headerShadowVisible: false,
-        headerBackTitle: 'Voltar',
-      }}>
-      <MonitoringStack.Screen name="Monitoring" component={MonitoringScreen} options={{ title: 'Monitoramento' }} />
-      <MonitoringStack.Screen name="Breathing" component={BreathingScreen} options={{ title: 'Respiração' }} />
-      <MonitoringStack.Screen name="Statistics" component={StatisticsScreen} options={{ title: 'Estatísticas' }} />
-    </MonitoringStack.Navigator>
-  );
-}
+// // Stack Navigator para a aba Monitoramento
+// function MonitoringStackScreen() {
+//   return (
+//     <MonitoringStack.Navigator
+//       screenOptions={{
+//         headerStyle: { backgroundColor: '#F5F8FF' },
+//         headerTintColor: '#4A90E2',
+//         headerShadowVisible: false,
+//         headerBackTitle: 'Voltar',
+//       }}>
+//       <MonitoringStack.Screen name="Monitoring" component={MonitoringScreen} options={{ title: 'Monitoramento' }} />
+//       <MonitoringStack.Screen name="Breathing" component={BreathingScreen} options={{ title: 'Respiração' }} />
+//       <MonitoringStack.Screen name="Statistics" component={StatisticsScreen} options={{ title: 'Estatísticas' }} />
+//     </MonitoringStack.Navigator>
+//   );
+// }
 
 // Stack Navigator para a aba Aprender
 function LearnStackScreen() {
@@ -177,6 +196,9 @@ function ProfileStackScreen() {
       <ProfileStack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Perfil' }} />
       <ProfileStack.Screen name="OpenFinance" component={OpenFinanceScreen} options={{ title: 'Open Finance' }} />
       <ProfileStack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Configurações' }} />
+      <ProfileStack.Screen name="DataControl" component={DataControlScreen} options={{ title: 'Controle de Dados' }} />
+      <ProfileStack.Screen name="ExplanationAudit" component={ExplanationAuditScreen} options={{ title: 'Auditoria de IA' }} />
+      <ProfileStack.Screen name="BiasAnalysis" component={BiasAnalysisScreen} options={{ title: 'Análise de Viés' }} />
       <ProfileStack.Screen name="CrisisMode" component={CrisisModeScreen} options={{ title: 'Modo Controle' }} />
     </ProfileStack.Navigator>
   );
@@ -250,11 +272,11 @@ function MainTabNavigator() {
           tabBarBadge: undefined // Remover comentário se precisar de notificações/badges
         }}
       />
-      <Tab.Screen 
+      {/* <Tab.Screen 
         name="MonitoringTab" 
         component={MonitoringStackScreen} 
         options={{ tabBarLabel: 'Monitoramento' }}
-      />
+      /> */}
       <Tab.Screen 
         name="LearnTab" 
         component={LearnStackScreen} 
@@ -274,21 +296,62 @@ function MainTabNavigator() {
   );
 }
 
+// Componente que decide qual fluxo de navegação mostrar
+function AppNavigator() {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    // Pode ser uma tela de splash mais elaborada
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  return (
+    <NavigationContainer>
+      {user ? <RootStack /> : <AuthStack />}
+    </NavigationContainer>
+  );
+}
+
 // Stack Navigator principal
 function RootStack() {
   return (
     <Stack.Navigator
-      initialRouteName="Splash"
+      // A tela inicial agora é a MainTabs, pois o usuário já está logado
+      initialRouteName="MainTabs"
       screenOptions={{
         headerShown: false,
       }}>
+      {/* As telas de autenticação são movidas para o AuthStack */}
+      <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+      <Stack.Screen name="QuizIntro" component={QuizIntroScreen} options={{ headerShown: true }} />
+      <Stack.Screen name="Quiz" component={QuizScreen} options={{ headerShown: true }} />
+      {/* O MFA pode ser necessário aqui se for um passo pós-login em certos cenários */}
+      <Stack.Screen name="MFA" component={MFAScreen} options={{ headerShown: true, title: 'Verificação MFA' }} />
+      <Stack.Screen name="Community" component={CommunityScreen} options={{ headerShown: true }} />
+      <Stack.Screen name="DataControl" component={DataControlScreen} options={{ headerShown: true, title: 'Controle de Dados' }} />
+      <Stack.Screen name="ExplanationAudit" component={ExplanationAuditScreen} options={{ headerShown: true, title: 'Auditoria de IA' }} />
+      <Stack.Screen name="BiasAnalysis" component={BiasAnalysisScreen} options={{ headerShown: true, title: 'Análise de Viés' }} />
+      <Stack.Screen name="CybersecurityDemo" component={CybersecurityDemoScreen} options={{ headerShown: true, title: 'Demo Cybersecurity' }} />
+      <Stack.Screen name="CryptographyDemo" component={CryptographyDemoScreen} options={{ headerShown: true, title: 'Demo Criptografia' }} />
+    </Stack.Navigator>
+  );
+}
+
+// Stack para o fluxo de autenticação
+function AuthStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Splash"
+      screenOptions={{ headerShown: false }}
+    >
       <Stack.Screen name="Splash" component={SplashScreen} />
       <Stack.Screen name="Onboarding" component={OnboardingScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="QuizIntro" component={QuizIntroScreen} options={{ headerShown: true }} />
-      <Stack.Screen name="Quiz" component={QuizScreen} options={{ headerShown: true }} />
-      <Stack.Screen name="MainTabs" component={MainTabNavigator} />
-      <Stack.Screen name="Community" component={CommunityScreen} options={{ headerShown: true }} />
+      <Stack.Screen name="MFA" component={MFAScreen} options={{ headerShown: true, title: 'Verificação MFA' }} />
     </Stack.Navigator>
   );
 }
@@ -296,10 +359,11 @@ function RootStack() {
 export default function App() {
   return (
     <SafeAreaProvider style={styles.container}>
-      <Toaster />
-      <NavigationContainer>
-        <RootStack />
-      </NavigationContainer>
+      {/* Envolvemos o app com o AuthProvider */}
+      <AuthProvider>
+        <Toaster />
+        <AppNavigator />
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }

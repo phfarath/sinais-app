@@ -98,7 +98,7 @@ export default function DashboardScreen({ navigation, route }: DashboardScreenPr
             />
             <Text style={styles.predictionBadge}>
               <MaterialCommunityIcons name="triangle" size={12} color="#F59E0B" />
-              {" "}Tendência Crescente
+              {` Tendência Crescente`} {/* MODIFICADO AQUI */}
             </Text>
           </View>
           <Text style={styles.predictionTitle}>Previsão para esta semana</Text>
