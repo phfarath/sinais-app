@@ -70,9 +70,3 @@ O ZAP Baseline Scan reportou 8 tipos de alertas. Abaixo estão os mais important
 - **Recomendação:** O middleware `helmet` também configura os cabeçalhos necessários para isso (`Cross-Origin-Opener-Policy` e `Cross-Origin-Embedder-Policy`) com padrões seguros.
 
 ---
-
-## Próximos Passos
-
-Recomenda-se aplicar as correções sugeridas no arquivo `server.js`, principalmente a adição do middleware `helmet`, que resolve a maioria dos problemas encontrados com uma única linha de código. Após a correção, uma nova varredura DAST deve ser executada para verificar se os alertas foram resolvidos.
-
-## Fim do Relatório

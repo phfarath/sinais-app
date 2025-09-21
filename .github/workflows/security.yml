@@ -2,9 +2,9 @@ name: DevSecOps Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: [ Versao_cyber ]
   pull_request:
-    branches: [ main ]
+    branches: [ Versao_cyber ]
 
 jobs:
   sca-scan:
@@ -24,12 +24,28 @@ jobs:
 
     - name: Run Snyk SCA Scan
       # Fails the build for high severity vulnerabilities
-      run: snyk test --fail-on=high
+      # Generates a JSON report for artifact upload
+      run: snyk test --fail-on=high --json > snyk-report.json
       continue-on-error: true # Continue to see the report even if it fails
+    
+    - name: Upload Snyk report
+      uses: actions/upload-artifact@v3
+      with:
+        name: snyk-report
+        path: snyk-report.json
+
+    - name: Snyk Monitor
+      # Sends a snapshot of the project's dependencies to Snyk for continuous monitoring
+      run: snyk monitor
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }} # Token must be set in repository secrets
 
   sast-scan:
     name: 'SAST Scan (Semgrep)'
     runs-on: ubuntu-latest
+    permissions:
+      # Required for uploading SARIF results to GitHub Security
+      security-events: write
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -40,6 +56,18 @@ jobs:
       with:
         # Fails the build for any finding with 'ERROR' severity
         config: 'p/default' # Use default rules, can be customized
+        sarif_file: semgrep-report.sarif
+
+    - name: Upload Semgrep SARIF report to GitHub Security
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: semgrep-report.sarif
+
+    - name: Upload Semgrep report as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: semgrep-report
+        path: semgrep-report.sarif
 
   dast-scan:
     name: 'DAST Scan (OWASP ZAP)'
@@ -62,9 +90,18 @@ jobs:
         node server.js &
         sleep 5 # Give the server a moment to start
 
-    - name: Run ZAP Baseline Scan
-      uses: zaproxy/action-baseline@v0.10.0
+    - name: Run ZAP Full Scan
+      uses: zaproxy/action-full-scan@v0.10.0
       with:
         target: 'http://localhost:3000'
+        # Use active scan with payloads
+        cmd_options: '-a'
         # Fail the build if any WARN or FAIL level issues are found
         fail_action: true
+        report_html: zap-report.html
+
+    - name: Upload ZAP report
+      uses: actions/upload-artifact@v3
+      with:
+        name: zap-report
+        path: zap-report.html

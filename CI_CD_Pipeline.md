@@ -8,8 +8,8 @@ O pipeline é definido no arquivo `.github/workflows/security.yml` e utiliza o G
 
 O pipeline é acionado automaticamente nos seguintes eventos:
 
-- **`push`**: Sempre que um novo commit é enviado para a branch `main`.
-- **`pull_request`**: Sempre que uma nova Pull Request é aberta ou atualizada com destino à branch `main`.
+- **`push`**: Sempre que um novo commit é enviado para a branch `Versao_cyber`.
+- **`pull_request`**: Sempre que uma nova Pull Request é aberta ou atualizada com destino à branch `Versao_cyber`.
 
 Isso garante que toda alteração no código principal seja verificada antes e depois de ser integrada.
 
@@ -20,35 +20,49 @@ O pipeline consiste em três jobs de segurança. O job de DAST depende do sucess
 ### a. `sca-scan` (Análise de Componentes de Terceiros)
 
 - **Ferramenta:** Snyk
-- **Descrição:** Este job verifica as dependências do projeto (pacotes NPM) em busca de vulnerabilidades conhecidas (CVEs).
-- **Política de Segurança:** O build falhará (`exit code 1`) se for encontrada qualquer vulnerabilidade de severidade **Alta** (`--fail-on=high`). Isso impede que dependências perigosas sejam introduzidas no projeto.
+- **Descrição:** Este job verifica as dependências do projeto (pacotes NPM) em busca de vulnerabilidades conhecidas (CVEs). Ele também envia um snapshot das dependências para a plataforma Snyk (`snyk monitor`), permitindo monitoramento contínuo e um plano de ação detalhado para itens sem patches.
+- **Política de Segurança:** O build falhará (`exit code 1`) se for encontrada qualquer vulnerabilidade de severidade **Alta** (`--fail-on=high`).
+- **Artefatos:** Um relatório `snyk-report.json` é gerado e disponibilizado para download.
 
 ### b. `sast-scan` (Análise Estática de Segurança)
 
 - **Ferramenta:** Semgrep
-- **Descrição:** Realiza uma análise estática no código-fonte em busca de padrões de código inseguros, como injeção de SQL, senhas hard-coded, e outras más práticas.
-- **Política de Segurança:** O job utiliza a ação oficial do Semgrep (`returntocorp/semgrep-action@v1`) com o conjunto de regras padrão (`p/default`). O build falhará se qualquer vulnerabilidade for encontrada.
+- **Descrição:** Realiza uma análise estática no código-fonte em busca de padrões de código inseguros. O job gera um relatório no formato SARIF, que inclui detalhes de severidade e guias de remediação.
+- **Política de Segurança:** O build falhará se qualquer vulnerabilidade de severidade `ERROR` for encontrada.
+- **Integração com GitHub Security:** O relatório SARIF é publicado na aba "Security" > "Code scanning alerts" do repositório, centralizando os findings de segurança.
+- **Artefatos:** Um relatório `semgrep-report.sarif` é disponibilizado para download.
 
 ### c. `dast-scan` (Análise Dinâmica de Segurança)
 
 - **Ferramenta:** OWASP ZAP
-- **Descrição:** Este job testa a aplicação em execução. Ele é executado apenas após o sucesso dos jobs de SCA e SAST.
+- **Descrição:** Este job realiza uma varredura **ativa** na aplicação em execução, enviando payloads para identificar vulnerabilidades em tempo real.
     1.  Primeiro, ele instala as dependências do mini-backend e o inicia em background.
-    2.  Em seguida, utiliza a action oficial do ZAP (`zaproxy/action-baseline@v0.10.0`) para realizar uma varredura de linha de base na API local (`http://localhost:3000`).
+    2.  Em seguida, utiliza a action `zaproxy/action-full-scan@v0.10.0` para realizar a varredura na API local (`http://localhost:3000`).
 - **Política de Segurança:** A action do ZAP está configurada com `fail_action: true`. Isso significa que o job falhará se o ZAP reportar qualquer alerta de nível **Warning** ou superior.
+- **Artefatos:** Um relatório `zap-report.html` detalhado, com as evidências encontradas, é disponibilizado para download.
 
-## 3. Políticas de Bloqueio e Notificações
+## 3. Artefatos e Relatórios
 
-- **Bloqueio de Deploy:** Em um repositório GitHub real, a branch `main` pode ser protegida. Ao ativar a regra "Require status checks to pass before merging", o GitHub irá proibir o merge de Pull Requests caso qualquer um desses jobs de segurança falhe. Isso efetivamente bloqueia o deploy de código inseguro.
-- **Notificações:** O GitHub Actions notifica automaticamente os usuários sobre falhas no pipeline através da interface de Pull Requests e por e-mail.
-- **Dashboards:** A aba "Actions" no repositório GitHub serve como um dashboard de segurança contínua, mostrando o histórico de execuções, logs, e os resultados de cada varredura.
+Ao final de cada execução, os seguintes artefatos são gerados e podem ser baixados na página de resumo do workflow no GitHub Actions:
+
+- **`snyk-report.json`**: Relatório bruto das vulnerabilidades de dependência.
+- **`semgrep-report.sarif`**: Relatório de análise estática, compatível com o GitHub Security.
+- **`zap-report.html`**: Relatório navegável da análise dinâmica, com detalhes e evidências.
+
+## 4. Políticas de Bloqueio e Notificações
+
+- **Bloqueio de Deploy:** A branch `Versao_cyber` pode ser protegida exigindo que os status checks passem antes do merge. Isso bloqueia efetivamente o deploy de código inseguro se qualquer um dos jobs de segurança falhar.
+- **Notificações:** O GitHub Actions notifica os usuários sobre falhas no pipeline através da interface de Pull Requests e por e-mail.
+- **Dashboards:**
+    - A aba **"Actions"** serve como um dashboard de CI/CD, mostrando o histórico de execuções e logs.
+    - A aba **"Security" > "Code scanning alerts"** serve como um dashboard de segurança centralizado para os resultados do SAST (Semgrep).
 
 ## Exemplo de Execução (Logs e Alertas)
 
-Em uma execução real, se o job de DAST falhasse, a saída na aba "Actions" se pareceria com isto:
+Se o job de DAST falhasse, a saída na aba "Actions" se pareceria com isto:
 
 ```log
-Run zaproxy/action-baseline@v0.10.0
+Run zaproxy/action-full-scan@v0.10.0
 ...
 WARN-NEW: X-Content-Type-Options Header Missing [10021] x 1
     http://localhost:3000
@@ -56,4 +70,4 @@ WARN-NEW: X-Content-Type-Options Header Missing [10021] x 1
 Error: Job failed: ZAP found 8 warning(s) and 0 error(s)
 ```
 
-Este log detalhado fornece evidência clara da vulnerabilidade, permitindo que o desenvolvedor a corrija rapidamente. A Pull Request associada mostraria um "X" vermelho, indicando que a verificação falhou e o merge está bloqueado.
+Este log detalhado, junto com o relatório `zap-report.html`, fornece evidência clara da vulnerabilidade, permitindo que o desenvolvedor a corrija rapidamente. A Pull Request associada mostraria um "X" vermelho, indicando que a verificação falhou e o merge está bloqueado.
