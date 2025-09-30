@@ -1,6 +1,6 @@
 // IMPORTANT: Storing API keys directly in the code is a security risk.
 // Consider using environment variables or a secure configuration service for production.
-const CHATGPT_API_KEY = 'x';
+import { CHATGPT_API_KEY } from '../config/env';
 const CHATGPT_API_URL = 'https://api.openai.com/v1/chat/completions';
 
 interface ChatCompletionResponse {

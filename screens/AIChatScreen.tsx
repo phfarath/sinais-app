@@ -14,9 +14,7 @@ import {
   FlatList,
   Alert
 } from 'react-native';
-import { sendMessageToGPT } from '../services/ChatService'; // Import the new service
-// Assuming you have a speech-to-text service/hook
-// import { useSpeechToText } from './useSpeechToText'; // Example hook
+import { AIService } from '../services/AIService'; // Import the AI service
 
 const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
 
@@ -31,23 +29,32 @@ interface Message {
   sender: 'user' | 'ai';
 }
 
-const suggestions = ["Como proteger meus dados?", "O que é phishing?", "Dicas de senha segura", "Como funciona a IA?"];
-
 export default function AIChatScreen({ visible, onClose }: AIChatScreenProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false); // To disable input while sending
-  const [isListening, setIsListening] = useState(false); // For microphone state
+  const [suggestions, setSuggestions] = useState<string[]>([]); // Dynamic suggestions
 
-  // Example: Replace with your actual speech-to-text logic
-  const mockStartListening = (): Promise<string> => {
-    return new Promise((resolve) => {
-      Alert.alert("Mock Listening", "Simulating voice input. Say 'Hello AI'.");
-      setTimeout(() => {
-        resolve("Hello AI");
-      }, 3000);
-    });
-  };
+  // Load quick replies when component mounts
+  useEffect(() => {
+    const loadQuickReplies = async () => {
+      try {
+        // For now, we'll use a placeholder user ID. In a real app, this would come from authentication
+        const userId = 'user_123';
+        const quickReplies = await AIService.getQuickReplies(userId);
+        setSuggestions(quickReplies);
+      } catch (error) {
+        console.error('Error loading quick replies:', error);
+        // Fallback to default suggestions
+        setSuggestions(["Como proteger meus dados?", "O que é phishing?", "Dicas de senha segura", "Como funciona a IA?"]);
+      }
+    };
+
+    if (visible) {
+      loadQuickReplies();
+    }
+  }, [visible]);
+
 
   const handleSendMessage = async (textToSend?: string) => {
     const currentText = textToSend || inputText;
@@ -61,7 +68,9 @@ export default function AIChatScreen({ visible, onClose }: AIChatScreenProps) {
     setIsSending(true);
 
     try {
-      const aiText = await sendMessageToGPT(userMessage.text);
+      // For now, we'll use a placeholder user ID. In a real app, this would come from authentication
+      const userId = 'user_123';
+      const aiText = await AIService.sendMessage(userId, userMessage.text);
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         text: aiText,
@@ -87,29 +96,6 @@ export default function AIChatScreen({ visible, onClose }: AIChatScreenProps) {
     // handleSendMessage(suggestion);
   };
 
-  const handleVoiceInput = async () => {
-    if (isListening || isSending) return;
-
-    setIsListening(true);
-    // TODO: Implement actual voice input functionality
-    // This would involve:
-    // 1. Requesting microphone permissions
-    // 2. Using a speech-to-text library (e.g., expo-speech or a third-party service)
-    try {
-      // const recognizedText = await startListening(); // Replace with your actual speech-to-text function
-      const recognizedText = await mockStartListening(); // Using mock function
-      if (recognizedText && recognizedText.trim() !== '') {
-        setInputText(recognizedText); // Set recognized text to input
-        // Optionally, send the message directly after voice input
-        // handleSendMessage(recognizedText); 
-      }
-    } catch (error) {
-      console.error("Speech-to-text error:", error);
-      Alert.alert("Voice Input Error", "Could not process voice input.");
-    } finally {
-      setIsListening(false);
-    }
-  };
 
   return (
     <Modal
@@ -147,7 +133,7 @@ export default function AIChatScreen({ visible, onClose }: AIChatScreenProps) {
             keyExtractor={item => item.id}
             style={styles.messagesContainer}
             contentContainerStyle={styles.messagesContentContainer}
-            inverted // To show newest messages at the bottom
+            // Removed inverted prop to show messages in normal order (newest at bottom)
           />
 
           {/* Suggestions */}
@@ -163,10 +149,6 @@ export default function AIChatScreen({ visible, onClose }: AIChatScreenProps) {
 
           {/* Input area */}
           <View style={styles.inputContainer}>
-            <TouchableOpacity onPress={handleVoiceInput} style={[styles.iconButton, isListening && styles.listeningButton]} disabled={isSending || isListening}>
-              {/* Placeholder for Mic Icon - replace with actual icon */}
-              <Text style={{ fontSize: 20 }}>{isListening ? "..." : "🎤"}</Text>
-            </TouchableOpacity>
             <TextInput
               style={styles.textInput}
               value={inputText}
@@ -308,13 +290,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 5, // Reduced horizontal padding for the container
     backgroundColor: '#F9FAFB', // Slightly off-white background for input area
-  },
-  iconButton: {
-    padding: 10,
-    marginHorizontal: 5, // Add some margin to icon buttons
-  },
-  listeningButton: {
-    backgroundColor: '#FFDAB9', // Example: Light peach background when listening
   },
   textInput: {
     flex: 1,

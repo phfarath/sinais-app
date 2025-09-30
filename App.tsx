@@ -7,7 +7,7 @@ import { Toaster } from 'sonner-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AIChatScreen from './screens/AIChatScreen'; // Import the AIChatScreen
 import { TouchableOpacity, View, Text, StyleSheet } from 'react-native'; // Import Text and alias StyleSheet
-import { useState } from 'react'; // Import useState
+import { useState, useEffect } from 'react'; // Import useState and useEffect
 
 // Importação das telas
 import SplashScreen from "./screens/SplashScreen"
@@ -49,7 +49,10 @@ export type RootStackParamList = {
   MFA: { userId: string; method?: 'sms' | 'email' | 'authenticator' };
   QuizIntro: undefined;
   Quiz: undefined;
-  MainTabs: undefined;
+  MainTabs: {
+    riskProfile?: 'Conservador' | 'Moderado' | 'Impulsivo';
+    score?: number;
+  };
   Dashboard: { riskProfile?: string };
   Alert: undefined;
   Educational: undefined;
@@ -259,7 +262,15 @@ function ProfileStackScreen() {
 }
 
 // Tab Navigator principal com as 5 abas
-function MainTabNavigator() {
+function MainTabNavigator({ setShowChatButton }: { setShowChatButton: (show: boolean) => void }) {
+  useEffect(() => {
+    // Show the chat button when MainTabNavigator is mounted
+    setShowChatButton(true);
+    
+    // Hide the chat button when MainTabNavigator is unmounted
+    return () => setShowChatButton(false);
+  }, [setShowChatButton]);
+  
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -318,22 +329,22 @@ function MainTabNavigator() {
         tabBarActiveBackgroundColor: 'rgba(74, 144, 226, 0.08)',
       })}
     >
-      <Tab.Screen 
-        name="HomeTab" 
-        component={HomeStackScreen} 
-        options={{ 
+      <Tab.Screen
+        name="HomeTab"
+        component={HomeStackScreen}
+        options={{
           tabBarLabel: 'Início',
           tabBarBadge: undefined // Remover comentário se precisar de notificações/badges
         }}
       />
-      <Tab.Screen 
-        name="MonitoringTab" 
-        component={MonitoringStackScreen} 
+      <Tab.Screen
+        name="MonitoringTab"
+        component={MonitoringStackScreen}
         options={{ tabBarLabel: 'Monitoramento' }}
       />
-      <Tab.Screen 
-        name="LearnTab" 
-        component={LearnStackScreen} 
+      <Tab.Screen
+        name="LearnTab"
+        component={LearnStackScreen}
         options={{ tabBarLabel: 'Aprender' }}
       />
       <Tab.Screen
@@ -354,9 +365,9 @@ function MainTabNavigator() {
           tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="chart-arc" color={color} size={size} />,
         }}
       />
-      <Tab.Screen 
-        name="ProfileTab" 
-        component={ProfileStackScreen} 
+      <Tab.Screen
+        name="ProfileTab"
+        component={ProfileStackScreen}
         options={{ tabBarLabel: 'Perfil' }}
       />
     </Tab.Navigator>
@@ -364,7 +375,7 @@ function MainTabNavigator() {
 }
 
 // Stack Navigator principal
-function RootStack() {
+function RootStack({ setShowChatButton }: { setShowChatButton: (show: boolean) => void }) {
   return (
     <Stack.Navigator
       initialRouteName="Splash"
@@ -377,7 +388,10 @@ function RootStack() {
       <Stack.Screen name="MFA" component={MFAScreen} options={{ headerShown: true, title: 'Verificação MFA' }} />
       <Stack.Screen name="QuizIntro" component={QuizIntroScreen} options={{ headerShown: true }} />
       <Stack.Screen name="Quiz" component={QuizScreen} options={{ headerShown: true }} />
-      <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+      <Stack.Screen
+        name="MainTabs"
+        component={() => <MainTabNavigator setShowChatButton={setShowChatButton} />}
+      />
       <Stack.Screen name="Community" component={CommunityScreen} options={{ headerShown: true }} />
       <Stack.Screen name="DataControl" component={DataControlScreen} options={{ headerShown: true, title: 'Controle de Dados' }} />
       <Stack.Screen name="ExplanationAudit" component={ExplanationAuditScreen} options={{ headerShown: true, title: 'Auditoria de IA' }} />
@@ -390,19 +404,24 @@ function RootStack() {
 
 export default function App() {
   const [isChatVisible, setIsChatVisible] = useState(false);
+  const [showChatButton, setShowChatButton] = useState(false);
 
   return (
     <NavigationContainer>
-      <RootStack />
-      {/* Floating AI Chat Button */}
-      <TouchableOpacity 
-        style={styles.chatButton}
-        onPress={() => setIsChatVisible(true)}
-      >
-        <Text style={styles.chatButtonText}>AI</Text>
-      </TouchableOpacity>
+      <RootStack setShowChatButton={setShowChatButton} />
+      {/* Floating AI Chat Button - only show after login */}
+      {showChatButton && (
+        <>
+          <TouchableOpacity
+            style={styles.chatButton}
+            onPress={() => setIsChatVisible(true)}
+          >
+            <Text style={styles.chatButtonText}>AI</Text>
+          </TouchableOpacity>
 
-      <AIChatScreen visible={isChatVisible} onClose={() => setIsChatVisible(false)} />
+          <AIChatScreen visible={isChatVisible} onClose={() => setIsChatVisible(false)} />
+        </>
+      )}
     </NavigationContainer>
   );
 }

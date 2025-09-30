@@ -224,7 +224,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
 
   const handleConsentComplete = () => {
     setShowConsentModal(false);
-    navigation.navigate('MainTabs');
+    navigation.navigate('QuizIntro');
   };
 
   const renderLoginModal = () => {

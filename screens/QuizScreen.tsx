@@ -12,6 +12,10 @@ interface Question {
 
 type RootStackParamList = {
   Quiz: undefined;
+  MainTabs: {
+    riskProfile: 'Conservador' | 'Moderado' | 'Impulsivo';
+    score: number;
+  };
   Dashboard: {
     riskProfile: 'Conservador' | 'Moderado' | 'Impulsivo';
     score: number;
@@ -95,7 +99,7 @@ export default function QuizScreen({ navigation }: QuizScreenProps) {
     const maxScore = questions.length * 3;
     const riskLevel = riskScore / maxScore;
     
-    navigation.navigate('Dashboard', {
+    navigation.navigate('MainTabs', {
       riskProfile: riskLevel < 0.3 ? 'Conservador' : riskLevel < 0.6 ? 'Moderado' : 'Impulsivo',
       score: riskScore
     });
