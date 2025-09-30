@@ -27,7 +27,7 @@ yarn-error.*
 
 # env
 .env
-config/.env.ts
+config/env.ts
 
 # macOS
 .DS_Store
