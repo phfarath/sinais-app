@@ -1,9 +1,10 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ViewStyle, TextStyle } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ViewStyle, TextStyle, Alert, Switch } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { FaceRecognitionService } from '../services/FaceRecognitionService';
 
 type RootStackParamList = {
   Profile: undefined;
@@ -14,6 +15,11 @@ type RootStackParamList = {
   ExplanationAudit: undefined;
   BiasAnalysis: undefined;
   CrisisMode: undefined;
+  FaceRegistration: {
+    userId: string;
+    riskProfile?: 'Conservador' | 'Moderado' | 'Impulsivo';
+    score?: number;
+  };
 };
 
 type ProfileScreenProps = {
@@ -34,6 +40,8 @@ interface Styles {
   alertBadge: TextStyle; // Added this line
   settingButton: ViewStyle;
   settingText: TextStyle;
+  settingTextContainer: ViewStyle;
+  settingSubtext: TextStyle;
   deleteButton: ViewStyle;
   deleteButtonText: TextStyle;
   riskIndicator: ViewStyle;
@@ -62,6 +70,11 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   const insets = useSafeAreaInsets();
   // Current risk level state (low, medium, high)
   const [riskLevel, setRiskLevel] = useState<'low' | 'medium' | 'high'>('medium');
+  
+  // Face recognition states
+  const [faceRecognitionEnabled, setFaceRecognitionEnabled] = useState(false);
+  const [faceRegistered, setFaceRegistered] = useState(false);
+  const [userId] = useState('user_' + Date.now()); // Mock user ID
 
   // Function to get color based on risk level
   const getRiskColor = () => {
@@ -91,6 +104,89 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
       case 'high': return 'Alto';
       default: return 'Médio';
     }
+  };
+
+  // Check face registration status on component mount
+  useEffect(() => {
+    const checkFaceRegistration = async () => {
+      try {
+        const status = await FaceRecognitionService.getFaceRegistrationStatus(userId);
+        setFaceRegistered(status.face_registered);
+        setFaceRecognitionEnabled(status.face_registered);
+      } catch (error) {
+        console.error('Error checking face registration status:', error);
+      }
+    };
+    
+    checkFaceRegistration();
+  }, [userId]);
+
+  const handleFaceRecognitionToggle = async (value: boolean) => {
+    if (!faceRegistered && value) {
+      // Navigate to face registration
+      navigation.navigate('FaceRegistration', {
+        userId,
+        riskProfile: 'Moderado', // Mock data
+        score: 45 // Mock data
+      });
+      return;
+    }
+
+    if (faceRegistered && !value) {
+      Alert.alert(
+        'Desativar Reconhecimento Facial',
+        'Tem certeza que deseja desativar o reconhecimento facial? Você poderá reativá-lo a qualquer momento.',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Desativar',
+            style: 'destructive',
+            onPress: () => {
+              setFaceRecognitionEnabled(false);
+            }
+          }
+        ]
+      );
+      return;
+    }
+
+    setFaceRecognitionEnabled(value);
+  };
+
+  const handleDeleteFaceData = async () => {
+    Alert.alert(
+      'Excluir Dados Faciais',
+      'Tem certeza que deseja excluir permanentemente seus dados faciais? Esta ação não pode ser desfeita.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const result = await FaceRecognitionService.deleteFaceRegistration(userId);
+              if (result.success) {
+                setFaceRegistered(false);
+                setFaceRecognitionEnabled(false);
+                Alert.alert('Sucesso', 'Seus dados faciais foram excluídos com sucesso.');
+              } else {
+                Alert.alert('Erro', result.message || 'Não foi possível excluir seus dados faciais.');
+              }
+            } catch (error) {
+              Alert.alert('Erro', 'Ocorreu um erro ao excluir seus dados faciais.');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleReregisterFace = () => {
+    navigation.navigate('FaceRegistration', {
+      userId,
+      riskProfile: 'Moderado', // Mock data
+      score: 45 // Mock data
+    });
   };
 
   return (
@@ -158,10 +254,50 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
               {` Resolvido`} {/* CORRIGIDO: template string */}
             </Text>
           </LinearGradient>
-        </View>        <View style={styles.section}>
+        </View>
+
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Configurações</Text>
           
-          <TouchableOpacity 
+          <View style={styles.settingButton}>
+            <MaterialCommunityIcons name="face-recognition" size={24} color="#4A90E2" />
+            <View style={styles.settingTextContainer}>
+              <Text style={styles.settingText}>Reconhecimento Facial</Text>
+              <Text style={styles.settingSubtext}>
+                {faceRegistered ? 'Rosto registrado' : 'Rosto não registrado'}
+              </Text>
+            </View>
+            <Switch
+              value={faceRecognitionEnabled}
+              onValueChange={handleFaceRecognitionToggle}
+              trackColor={{ false: '#D1D5DB', true: '#93C5FD' }}
+              thumbColor={faceRecognitionEnabled ? '#4A90E2' : '#F4F4F5'}
+            />
+          </View>
+
+          {faceRegistered && (
+            <>
+              <TouchableOpacity
+                style={styles.settingButton}
+                onPress={handleReregisterFace}
+              >
+                <MaterialCommunityIcons name="face-recognition" size={24} color="#10B981" />
+                <Text style={styles.settingText}>Atualizar Rosto Registrado</Text>
+                <MaterialCommunityIcons name="chevron-right" size={24} color="#64748B" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.settingButton}
+                onPress={handleDeleteFaceData}
+              >
+                <MaterialCommunityIcons name="delete-outline" size={24} color="#DC2626" />
+                <Text style={[styles.settingText, { color: '#DC2626' }]}>Excluir Dados Faciais</Text>
+                <MaterialCommunityIcons name="chevron-right" size={24} color="#DC2626" />
+              </TouchableOpacity>
+            </>
+          )}
+          
+          <TouchableOpacity
             style={styles.settingButton}
             onPress={() => navigation.navigate('Settings')}
           >
@@ -397,10 +533,19 @@ const styles = StyleSheet.create<Styles>({
     elevation: 3,
   },
   settingText: {
-    flex: 1,
     fontSize: 16,
     color: '#1E293B',
     marginLeft: 16,
+    flex: 1,
+  },
+  settingTextContainer: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  settingSubtext: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 2,
   },
   deleteButton: {
     flexDirection: 'row',

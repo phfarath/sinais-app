@@ -13,18 +13,25 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera for face recognition authentication."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.snack1eb5d88a8d094c6a8e2f742350d1ea1e"
+      "package": "com.anonymous.snack1eb5d88a8d094c6a8e2f742350d1ea1e",
+      "permissions": ["CAMERA"]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "plugins": [
+      "expo-camera"
+    ],
     "description": "Quickly generate React Native components with AI"
   }
 }

@@ -11,7 +11,7 @@
     "module": "esnext",
     "lib": ["esnext"],
     "allowSyntheticDefaultImports": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "skipLibCheck": true
   }
 }

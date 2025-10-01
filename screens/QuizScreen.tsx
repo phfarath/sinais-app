@@ -20,6 +20,11 @@ type RootStackParamList = {
     riskProfile: 'Conservador' | 'Moderado' | 'Impulsivo';
     score: number;
   };
+  FaceRegistration: {
+    userId: string;
+    riskProfile?: 'Conservador' | 'Moderado' | 'Impulsivo';
+    score?: number;
+  };
 };
 
 type QuizScreenProps = {
@@ -99,8 +104,12 @@ export default function QuizScreen({ navigation }: QuizScreenProps) {
     const maxScore = questions.length * 3;
     const riskLevel = riskScore / maxScore;
     
-    navigation.navigate('MainTabs', {
-      riskProfile: riskLevel < 0.3 ? 'Conservador' : riskLevel < 0.6 ? 'Moderado' : 'Impulsivo',
+    const riskProfile = riskLevel < 0.3 ? 'Conservador' : riskLevel < 0.6 ? 'Moderado' : 'Impulsivo';
+    
+    // Navigate to face registration with quiz results
+    navigation.navigate('FaceRegistration', {
+      userId: 'user_' + Date.now(), // In a real app, this would come from authentication
+      riskProfile,
       score: riskScore
     });
   };

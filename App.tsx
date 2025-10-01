@@ -36,6 +36,8 @@ import ExplanationAuditScreen from "./screens/ExplanationAuditScreen";
 import BiasAnalysisScreen from "./screens/BiasAnalysisScreen";
 import CybersecurityDemoScreen from "./screens/CybersecurityDemoScreen";
 import CryptographyDemoScreen from "./screens/CryptographyDemoScreen";
+import FaceRegistrationScreen from "./screens/FaceRegistrationScreen";
+import FaceAuthenticationScreen from "./screens/FaceAuthenticationScreen";
 
 // Tipos de Navegação
 export type RootStackParamList = {
@@ -49,6 +51,14 @@ export type RootStackParamList = {
   Community: undefined;
   CybersecurityDemo: undefined;
   CryptographyDemo: undefined;
+  FaceRegistration: {
+    userId: string;
+    riskProfile?: 'Conservador' | 'Moderado' | 'Impulsivo';
+    score?: number;
+  };
+  FaceAuthentication: {
+    email?: string;
+  };
 };
 
 export type HomeStackParamList = {
@@ -83,6 +93,11 @@ export type ProfileStackParamList = {
   ExplanationAudit: undefined;
   BiasAnalysis: undefined;
   CrisisMode: undefined;
+  FaceRegistration: {
+    userId: string;
+    riskProfile?: 'Conservador' | 'Moderado' | 'Impulsivo';
+    score?: number;
+  };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -208,10 +223,14 @@ export default function App() {
         <Stack.Screen name="MFA" component={MFAScreen} options={{ headerShown: true, header: CustomHeader, title: 'Verificação MFA' }} />
         <Stack.Screen name="QuizIntro" component={QuizIntroScreen} options={{ headerShown: true, header: CustomHeader, title: 'Quiz de Perfil' }} />
         <Stack.Screen name="Quiz" component={QuizScreen} options={{ headerShown: true, header: CustomHeader, title: 'Quiz' }} />
-        <Stack.Screen name="MainTabs" component={() => <MainTabNavigator setShowChatButton={setShowChatButton} />} />
+        <Stack.Screen name="MainTabs">
+          {() => <MainTabNavigator setShowChatButton={setShowChatButton} />}
+        </Stack.Screen>
         <Stack.Screen name="Community" component={CommunityScreen} options={{ headerShown: true, header: CustomHeader, title: 'Comunidade' }} />
         <Stack.Screen name="CybersecurityDemo" component={CybersecurityDemoScreen} options={{ headerShown: true, header: CustomHeader, title: 'Demo Cybersecurity' }} />
         <Stack.Screen name="CryptographyDemo" component={CryptographyDemoScreen} options={{ headerShown: true, header: CustomHeader, title: 'Demo Criptografia' }} />
+        <Stack.Screen name="FaceRegistration" component={FaceRegistrationScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="FaceAuthentication" component={FaceAuthenticationScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
       {showChatButton && (
         <>

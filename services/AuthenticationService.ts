@@ -3,7 +3,7 @@ import * as LocalAuthentication from 'expo-local-authentication';
 
 export interface AuthResult {
   success: boolean;
-  method?: 'password' | 'biometric' | 'mfa';
+  method?: 'password' | 'biometric' | 'mfa' | 'face_recognition';
   token?: string;
   expiresAt?: Date;
   error?: string;
@@ -136,6 +136,39 @@ export class AuthenticationService {
       return { 
         success: false, 
         error: 'Erro na autenticação biométrica.' 
+      };
+    }
+  }
+
+  /**
+   * Autentica usando reconhecimento facial
+   * @param userId ID do usuário
+   * @returns Resultado da autenticação facial
+   */
+  static async authenticateWithFace(userId: string): Promise<AuthResult> {
+    try {
+      // Gerar token de sessão
+      const token = this.generateSessionToken();
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      
+      this.authTokens.set(userId, { token, expiresAt });
+
+      AuditService.logAction('LOGIN_SUCCESS', 'AUTHENTICATION', userId,
+        { method: 'face_recognition' }, 'LOW');
+
+      return {
+        success: true,
+        method: 'face_recognition',
+        token,
+        expiresAt
+      };
+
+    } catch (error) {
+      AuditService.logAction('FACE_AUTH_ERROR', 'AUTHENTICATION', userId,
+        { error: error instanceof Error ? error.message : 'Unknown error' }, 'HIGH');
+      return {
+        success: false,
+        error: 'Erro na autenticação facial.'
       };
     }
   }

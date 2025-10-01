@@ -22,6 +22,9 @@ type RootStackParamList = {
   Login: undefined;
   QuizIntro: undefined;
   MainTabs: undefined;
+  FaceAuthentication: {
+    email?: string;
+  };
 };
 
 type LoginScreenProps = {
@@ -41,6 +44,7 @@ interface Styles {
   appleButton: ViewStyle;
   xpButton: ViewStyle;
   guestButton: ViewStyle;
+  faceButton: ViewStyle;
   buttonText: TextStyle;
   footer: ViewStyle;
   privacyText: TextStyle;
@@ -499,12 +503,20 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
             <Text style={styles.buttonText}>Entrar com Conta XP</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={[styles.button, styles.guestButton]} 
+          <TouchableOpacity
+            style={[styles.button, styles.guestButton]}
             onPress={() => handleLoginOption('guest')}
           >
             <MaterialCommunityIcons name="account-outline" size={24} color="#6B7280" />
             <Text style={[styles.buttonText, { color: '#6B7280' }]}>Continuar como convidado</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.button, styles.faceButton]}
+            onPress={() => navigation.navigate('FaceAuthentication', { email: email || undefined })}
+          >
+            <MaterialCommunityIcons name="face-recognition" size={24} color="#4A90E2" />
+            <Text style={[styles.buttonText, { color: '#4A90E2' }]}>Entrar com Reconhecimento Facial</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -579,6 +591,11 @@ const styles = StyleSheet.create<Styles>({
   },
   guestButton: {
     backgroundColor: '#F3F4F6',
+  },
+  faceButton: {
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#4A90E2',
   },
   buttonText: {
     fontSize: 16,
