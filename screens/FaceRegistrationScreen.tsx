@@ -43,9 +43,16 @@ export default function FaceRegistrationScreen({ navigation, route }: FaceRegist
       console.log('Backend health check result:', healthCheck);
       
       if (!healthCheck.healthy) {
+        // Check if it's a timeout error
+        const isTimeout = healthCheck.error?.includes('aborted') ||
+                         healthCheck.error?.includes('timeout') ||
+                         healthCheck.error?.includes('Network request timed out');
+        
         Alert.alert(
           'Erro de Conexão',
-          `Não foi possível conectar ao servidor de reconhecimento facial: ${healthCheck.error || 'Erro desconhecido'}. Verifique se o backend está rodando e se seu dispositivo está na mesma rede.`,
+          isTimeout
+            ? `A conexão com o servidor está demorando muito. Verifique se o backend está rodando em http://192.168.15.10:8000 e se seu dispositivo está na mesma rede.`
+            : `Não foi possível conectar ao servidor de reconhecimento facial: ${healthCheck.error || 'Erro desconhecido'}. Verifique se o backend está rodando e se seu dispositivo está na mesma rede.`,
           [
             { text: 'Cancelar', onPress: () => navigation.replace('MainTabs') },
             { text: 'Tentar Novamente', onPress: handleStartRegistration }

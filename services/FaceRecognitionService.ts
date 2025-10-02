@@ -28,6 +28,11 @@ export interface FaceRegistrationStatus {
 
 export class FaceRecognitionService {
   private static readonly API_BASE = FACE_RECOGNITION_URL;
+  private static readonly FALLBACK_URLS = [
+    'http://192.168.15.154:8000',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000'
+  ];
   
   /**
    * Register a user's face
@@ -90,13 +95,21 @@ export class FaceRecognitionService {
       const apiUrl = `${this.API_BASE}/api/face/register`;
       console.log('Sending request to:', apiUrl);
       
+      // Create an AbortController for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout for registration
+      
       const result = await fetch(apiUrl, {
         method: 'POST',
         body: formData,
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        signal: controller.signal,
       });
+      
+      // Clear the timeout if the request completes in time
+      clearTimeout(timeoutId);
       
       console.log('Response status:', result.status);
       console.log('Response ok:', result.ok);
@@ -188,13 +201,21 @@ export class FaceRecognitionService {
       const apiUrl = `${this.API_BASE}/api/face/authenticate`;
       console.log('Sending request to:', apiUrl);
       
+      // Create an AbortController for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout for authentication
+      
       const result = await fetch(apiUrl, {
         method: 'POST',
         body: formData,
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        signal: controller.signal,
       });
+      
+      // Clear the timeout if the request completes in time
+      clearTimeout(timeoutId);
       
       console.log('Response status:', result.status);
       console.log('Response ok:', result.ok);
@@ -244,7 +265,17 @@ export class FaceRecognitionService {
    */
   static async getFaceRegistrationStatus(userId: string): Promise<FaceRegistrationStatus> {
     try {
-      const result = await fetch(`${this.API_BASE}/api/face/status/${userId}`);
+      // Create an AbortController for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const result = await fetch(`${this.API_BASE}/api/face/status/${userId}`, {
+        signal: controller.signal,
+      });
+      
+      // Clear the timeout if the request completes in time
+      clearTimeout(timeoutId);
+      
       const data = await result.json();
 
       if (!result.ok) {
@@ -271,12 +302,20 @@ export class FaceRecognitionService {
    */
   static async deleteFaceRegistration(userId: string): Promise<{ success: boolean; message?: string }> {
     try {
-      AuditService.logAction('FACE_REGISTRATION_DELETE_STARTED', 'FACE_RECOGNITION', userId, 
+      AuditService.logAction('FACE_REGISTRATION_DELETE_STARTED', 'FACE_RECOGNITION', userId,
         {}, 'MEDIUM');
 
+      // Create an AbortController for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
       const result = await fetch(`${this.API_BASE}/api/face/${userId}`, {
         method: 'DELETE',
+        signal: controller.signal,
       });
+      
+      // Clear the timeout if the request completes in time
+      clearTimeout(timeoutId);
 
       const data = await result.json();
 
@@ -314,9 +353,50 @@ export class FaceRecognitionService {
    * @returns Service health status
    */
   static async checkServiceHealth(): Promise<{ healthy: boolean; models_loaded: boolean; registered_faces: number; error?: string }> {
+    // Try the primary URL first
+    const primaryResult = await this.tryHealthCheck(this.API_BASE);
+    if (primaryResult.healthy) {
+      return primaryResult;
+    }
+    
+    // If primary fails, try fallback URLs
+    console.log('Primary URL failed, trying fallback URLs...');
+    for (const url of this.FALLBACK_URLS) {
+      if (url === this.API_BASE) continue; // Skip if it's the same as primary
+      
+      console.log(`Trying fallback URL: ${url}`);
+      const result = await this.tryHealthCheck(url);
+      if (result.healthy) {
+        // Update the API_BASE to the working URL
+        (this as any).API_BASE = url;
+        return result;
+      }
+    }
+    
+    // All URLs failed
+    return {
+      healthy: false,
+      models_loaded: false,
+      registered_faces: 0,
+      error: primaryResult.error || 'Could not connect to any backend URL'
+    };
+  }
+  
+  private static async tryHealthCheck(url: string): Promise<{ healthy: boolean; models_loaded: boolean; registered_faces: number; error?: string }> {
     try {
-      console.log('Checking service health at:', `${this.API_BASE}/api/health`);
-      const result = await fetch(`${this.API_BASE}/api/health`);
+      console.log('Checking service health at:', `${url}/api/health`);
+      
+      // Create an AbortController for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const result = await fetch(`${url}/api/health`, {
+        signal: controller.signal,
+      });
+      
+      // Clear the timeout if the request completes in time
+      clearTimeout(timeoutId);
+      
       console.log('Health check response status:', result.status);
       
       const data = await result.json();
@@ -338,7 +418,7 @@ export class FaceRecognitionService {
       };
 
     } catch (error) {
-      console.error('Health check error:', error);
+      console.error(`Health check error for ${url}:`, error);
       return {
         healthy: false,
         models_loaded: false,
