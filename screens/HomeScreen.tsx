@@ -136,6 +136,91 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
           <MaterialCommunityIcons name="heart-pulse" size={24} color="#4A90E2" />
           <Text style={styles.whyButtonText}>Por que isso importa?</Text>
         </TouchableOpacity>
+
+        {/* Novos Recursos Demonstráveis */}
+        <View style={{ padding: 16, paddingTop: 8 }}>
+          <Text style={{ fontSize: 20, fontWeight: '700', color: '#1F2937', marginBottom: 16 }}>
+            🚀 Novos Recursos
+          </Text>
+
+          {/* Quick Access Grid */}
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
+            <TouchableOpacity
+              style={{ flex: 1, minWidth: '47%' }}
+              onPress={() => navigation.navigate('AppBlocker')}
+            >
+              <LinearGradient
+                colors={['#FEE2E2', '#FECACA']}
+                style={{ padding: 20, borderRadius: 16, alignItems: 'center', minHeight: 120 }}
+              >
+                <MaterialCommunityIcons name="lock" size={32} color="#DC2626" />
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#1F2937', marginTop: 8, textAlign: 'center' }}>
+                  Bloqueio de Apps
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{ flex: 1, minWidth: '47%' }}
+              onPress={() => navigation.navigate('UsageAnalytics')}
+            >
+              <LinearGradient
+                colors={['#DBEAFE', '#BFDBFE']}
+                style={{ padding: 20, borderRadius: 16, alignItems: 'center', minHeight: 120 }}
+              >
+                <MaterialCommunityIcons name="chart-line" size={32} color="#1E40AF" />
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#1F2937', marginTop: 8, textAlign: 'center' }}>
+                  Análise de Uso
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{ flex: 1, minWidth: '47%' }}
+              onPress={() => navigation.navigate('FocusMode')}
+            >
+              <LinearGradient
+                colors={['#E9D5FF', '#D8B4FE']}
+                style={{ padding: 20, borderRadius: 16, alignItems: 'center', minHeight: 120 }}
+              >
+                <MaterialCommunityIcons name="brain" size={32} color="#7C3AED" />
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#1F2937', marginTop: 8, textAlign: 'center' }}>
+                  Modo Foco
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{ flex: 1, minWidth: '47%' }}
+              onPress={() => navigation.navigate('EmergencyMode')}
+            >
+              <LinearGradient
+                colors={['#FEF3C7', '#FDE68A']}
+                style={{ padding: 20, borderRadius: 16, alignItems: 'center', minHeight: 120 }}
+              >
+                <MaterialCommunityIcons name="alert-octagon" size={32} color="#D97706" />
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#1F2937', marginTop: 8, textAlign: 'center' }}>
+                  SOS Emergência
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{ flex: 1, minWidth: '47%' }}
+              onPress={() => navigation.navigate('Gamification')}
+            >
+              <LinearGradient
+                colors={['#FEF3C7', '#FDE047']}
+                style={{ padding: 20, borderRadius: 16, alignItems: 'center', minHeight: 120 }}
+              >
+                <MaterialCommunityIcons name="trophy" size={32} color="#92400E" />
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#1F2937', marginTop: 8, textAlign: 'center' }}>
+                  Conquistas
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </View>
       </ScrollView>
 
       <AIChatScreen

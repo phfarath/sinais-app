@@ -39,6 +39,13 @@ import CryptographyDemoScreen from "./screens/CryptographyDemoScreen";
 import FaceRegistrationScreen from "./screens/FaceRegistrationScreen";
 import FaceAuthenticationScreen from "./screens/FaceAuthenticationScreen";
 
+// Telas de Diferenciais Demonstráveis
+import AppBlockerScreen from "./screens/AppBlockerScreen";
+import UsageAnalyticsScreen from "./screens/UsageAnalyticsScreen";
+import FocusModeScreen from "./screens/FocusModeScreen";
+import EmergencyModeScreen from "./screens/EmergencyModeScreen";
+import GamificationScreen from "./screens/GamificationScreen";
+
 // Tipos de Navegação
 export type RootStackParamList = {
   Splash: undefined;
@@ -67,6 +74,11 @@ export type HomeStackParamList = {
   Alert: undefined;
   CrisisMode: undefined;
   AIChat: undefined;
+  AppBlocker: undefined;
+  UsageAnalytics: undefined;
+  FocusMode: undefined;
+  EmergencyMode: undefined;
+  Gamification: undefined;
 };
 
 export type MonitoringStackParamList = {
@@ -119,6 +131,11 @@ function HomeStackScreen() {
       <HomeStack.Screen name="WhyItMatters" component={WhyItMattersScreen} options={{ title: 'Por que isso importa?' }} />
       <HomeStack.Screen name="Alert" component={AlertScreen} options={{ title: 'Alertas' }} />
       <HomeStack.Screen name="CrisisMode" component={CrisisModeScreen} options={{ title: 'Modo Controle' }} />
+      <HomeStack.Screen name="AppBlocker" component={AppBlockerScreen} options={{ title: 'Bloqueio de Apps' }} />
+      <HomeStack.Screen name="UsageAnalytics" component={UsageAnalyticsScreen} options={{ title: 'Análise de Uso' }} />
+      <HomeStack.Screen name="FocusMode" component={FocusModeScreen} options={{ title: 'Modo Foco' }} />
+      <HomeStack.Screen name="EmergencyMode" component={EmergencyModeScreen} options={{ title: 'Modo Emergência' }} />
+      <HomeStack.Screen name="Gamification" component={GamificationScreen} options={{ title: 'Conquistas' }} />
     </HomeStack.Navigator>
   );
 }
