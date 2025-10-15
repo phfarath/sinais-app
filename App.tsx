@@ -18,7 +18,7 @@ import QuizIntroScreen from "./screens/QuizIntroScreen";
 import QuizScreen from "./screens/QuizScreen";
 import AlertScreen from "./screens/AlertScreen";
 import EducationalScreen from "./screens/EducationalScreen";
-import InvestmentComparisonScreen from './screens/InvestmentComparisonScreen';
+import CirclesScreen from './screens/CirclesScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import StatisticsScreen from "./screens/StatisticsScreen";
 import BreathingScreen from "./screens/BreathingScreen";
@@ -97,6 +97,10 @@ export type GoalsStackParamList = {
   Insights: undefined;
 };
 
+export type CirclesStackParamList = {
+  Circles: undefined;
+};
+
 export type ProfileStackParamList = {
   Profile: undefined;
   OpenFinance: undefined;
@@ -171,6 +175,15 @@ function GoalsStackScreen() {
   );
 }
 
+const CirclesStack = createNativeStackNavigator<CirclesStackParamList>();
+function CirclesStackScreen() {
+  return (
+    <CirclesStack.Navigator screenOptions={{ header: CustomHeader, headerShown: true }}>
+      <CirclesStack.Screen name="Circles" component={CirclesScreen} options={{ title: 'SINAIS Circles' }} />
+    </CirclesStack.Navigator>
+  );
+}
+
 const ProfileStack = createNativeStackNavigator<ProfileStackParamList>();
 function ProfileStackScreen() {
   return (
@@ -209,18 +222,22 @@ function MainTabNavigator({ setShowChatButton }: { setShowChatButton: (show: boo
             iconName = focused ? 'book' : 'book-outline';
           } else if (route.name === 'GoalsTab') {
             iconName = focused ? 'flag-checkered' : 'flag-variant-outline';
+          } else if (route.name === 'CirclesTab') {
+            iconName = focused ? 'earth' : 'earth';
           } else if (route.name === 'ProfileTab') {
             iconName = focused ? 'account' : 'account-outline';
           }
           return <MaterialCommunityIcons name={iconName} size={size} color={color} />;
         },
         tabBarStyle: { height: 65, paddingBottom: 8, paddingTop: 8 },
+        tabBarLabelStyle: { fontSize: 11 },
       })}
     >
       <Tab.Screen name="HomeTab" component={HomeStackScreen} options={{ tabBarLabel: 'Início' }} />
-      <Tab.Screen name="MonitoringTab" component={MonitoringStackScreen} options={{ tabBarLabel: 'Monitoramento' }} />
+      <Tab.Screen name="MonitoringTab" component={MonitoringStackScreen} options={{ tabBarLabel: 'Monitor' }} />
       <Tab.Screen name="LearnTab" component={LearnStackScreen} options={{ tabBarLabel: 'Aprender' }} />
       <Tab.Screen name="GoalsTab" component={GoalsStackScreen} options={{ tabBarLabel: 'Metas' }} />
+      <Tab.Screen name="CirclesTab" component={CirclesStackScreen} options={{ tabBarLabel: 'Circles' }} />
       <Tab.Screen name="ProfileTab" component={ProfileStackScreen} options={{ tabBarLabel: 'Perfil' }} />
     </Tab.Navigator>
   );

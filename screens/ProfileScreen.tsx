@@ -5,6 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState, useEffect } from 'react';
 import { FaceRecognitionService } from '../services/FaceRecognitionService';
+import { UserContext } from '../services/UserContext';
 
 type RootStackParamList = {
   Profile: undefined;
@@ -197,8 +198,8 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
           style={styles.header}
         >
           <MaterialCommunityIcons name="account-circle" size={80} color="#4A90E2" />
-          <Text style={styles.name}>Visitante</Text>
-          <Text style={styles.subtitle}>Perfil Anônimo</Text>
+          <Text style={styles.name}>{UserContext.getDisplayName()}</Text>
+          <Text style={styles.subtitle}>{UserContext.getUser()?.email || 'Perfil Anônimo'}</Text>
           
           <View style={[styles.riskIndicator, { backgroundColor: getRiskColor() }]}>
             <MaterialCommunityIcons name={getRiskIcon()} size={24} color="white" />
@@ -215,7 +216,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
             <View style={styles.scoreCardHeader}>
               <MaterialCommunityIcons name="trending-down" size={24} color="#10B981" />
               <Text style={styles.scoreTitle}>Seu Score</Text>
-              <Text style={styles.scoreValue}>45</Text>
+              <Text style={styles.scoreValue}>{UserContext.getUser()?.wellness_score || 45}</Text>
             </View>
             
             <View style={styles.graphContainer}>

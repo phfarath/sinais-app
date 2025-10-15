@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
-  ViewStyle, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ViewStyle,
   TextStyle,
   Modal,
   ScrollView,
@@ -12,11 +12,12 @@ import {
   Switch,
   KeyboardAvoidingView,
   Platform,
-  Alert 
+  Alert
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { UserContext } from '../services/UserContext';
 
 type RootStackParamList = {
   Login: undefined;
@@ -226,8 +227,19 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
     setShowConsentModal(true);
   };
 
-  const handleConsentComplete = () => {
+  const handleConsentComplete = async () => {
     setShowConsentModal(false);
+    
+    // Fetch user profile from Supabase
+    try {
+      const userProfile = await UserContext.fetchUserByEmail(email);
+      if (userProfile) {
+        console.log('User profile loaded:', userProfile.full_name);
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+    
     navigation.navigate('QuizIntro');
   };
 

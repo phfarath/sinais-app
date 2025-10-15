@@ -5,8 +5,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList } from '../App';
 import { FontAwesome } from '@expo/vector-icons';
-import AIChatScreen from './AIChatScreen'; // Import the new screen
+import AIChatScreen from './AIChatScreen';
 import { useState } from 'react';
+import { UserContext } from '../services/UserContext';
 
 type HomeScreenProps = {
   navigation: NativeStackNavigationProp<HomeStackParamList, 'Home'>;
@@ -46,7 +47,7 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
           colors={['#FFFFFF', '#F8FAFC']}
           style={styles.header}
         >
-          <Text style={styles.welcome}>Olá, Visitante</Text>
+          <Text style={styles.welcome}>Olá, {UserContext.getDisplayName()}</Text>
           <Text style={styles.date}>
             {new Date().toLocaleDateString('pt-BR', { 
               weekday: 'long', 

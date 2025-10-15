@@ -12,10 +12,7 @@ interface Question {
 
 type RootStackParamList = {
   Quiz: undefined;
-  MainTabs: {
-    riskProfile: 'Conservador' | 'Moderado' | 'Impulsivo';
-    score: number;
-  };
+  MainTabs: undefined;
   Dashboard: {
     riskProfile: 'Conservador' | 'Moderado' | 'Impulsivo';
     score: number;
@@ -91,14 +88,14 @@ export default function QuizScreen({ navigation }: QuizScreenProps) {
   };
 
   const calculateAndNavigate = (finalAnswers: Record<number, string>) => {
-    const scores: Record<string, number> = { 
-      'Nunca': 0, 
-      'Raramente': 1, 
-      'Às vezes': 2, 
-      'Frequentemente': 3 
+    const scores: Record<string, number> = {
+      'Nunca': 0,
+      'Raramente': 1,
+      'Às vezes': 2,
+      'Frequentemente': 3
     };
 
-    const riskScore = Object.values(finalAnswers).reduce((acc, val) => 
+    const riskScore = Object.values(finalAnswers).reduce((acc, val) =>
       acc + scores[val], 0);
 
     const maxScore = questions.length * 3;
@@ -106,12 +103,8 @@ export default function QuizScreen({ navigation }: QuizScreenProps) {
     
     const riskProfile = riskLevel < 0.3 ? 'Conservador' : riskLevel < 0.6 ? 'Moderado' : 'Impulsivo';
     
-    // Navigate to face registration with quiz results
-    navigation.navigate('FaceRegistration', {
-      userId: 'user_' + Date.now(), // In a real app, this would come from authentication
-      riskProfile,
-      score: riskScore
-    });
+    // Navigate directly to MainTabs - face registration is optional in Profile
+    navigation.navigate('MainTabs');
   };
 
   return (

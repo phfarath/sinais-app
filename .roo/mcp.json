@@ -7,13 +7,15 @@
         "npx",
         "-y",
         "@supabase/mcp-server-supabase@latest",
-        "--read-only",
-        "--project-ref=xsborbalilvztuayghuz"
+        "--project-ref=vjgoqxgjzebhcxmosbli"
       ],
       "env": {
-        "SUPABASE_ACCESS_TOKEN": "sbp_9ffe9795acc5dfd370574b93c2fc3ec022f05b9e"
+        "SUPABASE_ACCESS_TOKEN": "sbp_e802cb4546325458859fa8647d584623bf0b7d1f"
       },
-      "alwaysAllow": []
+      "alwaysAllow": [
+        "list_tables",
+        "apply_migration"
+      ]
     }
   }
 }
