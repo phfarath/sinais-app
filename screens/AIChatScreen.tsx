@@ -15,6 +15,8 @@ import {
   Alert
 } from 'react-native';
 import { AIService } from '../services/AIService'; // Import the AI service
+import { SupabaseService } from '../services/SupabaseService';
+import { UserContext } from '../services/UserContext';
 
 const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
 
@@ -30,35 +32,77 @@ interface Message {
 }
 
 export default function AIChatScreen({ visible, onClose }: AIChatScreenProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [inputText, setInputText] = useState('');
-  const [isSending, setIsSending] = useState(false); // To disable input while sending
-  const [suggestions, setSuggestions] = useState<string[]>([]); // Dynamic suggestions
+   const [messages, setMessages] = useState<Message[]>([]);
+   const [inputText, setInputText] = useState('');
+   const [isSending, setIsSending] = useState(false); // To disable input while sending
+   const [suggestions, setSuggestions] = useState<string[]>([]); // Dynamic suggestions
+   const [loadingHistory, setLoadingHistory] = useState(false);
 
-  // Load quick replies when component mounts
+  // Load chat history and quick replies when modal opens
   useEffect(() => {
-    const loadQuickReplies = async () => {
+    const loadData = async () => {
+      if (!visible) return;
+
       try {
-        // For now, we'll use a placeholder user ID. In a real app, this would come from authentication
-        const userId = 'user_123';
-        const quickReplies = await AIService.getQuickReplies(userId);
+        // Get current user
+        const currentUser = UserContext.getUser();
+        if (!currentUser) {
+          console.log('❌ No user found for chat');
+          setSuggestions(["Como proteger meus dados?", "O que é phishing?", "Dicas de senha segura", "Como funciona a IA?"]);
+          return;
+        }
+
+        console.log('✅ Loading chat data for user:', currentUser.id);
+
+        // Load chat history
+        setLoadingHistory(true);
+        const chatHistory = await SupabaseService.getChatHistory(currentUser.id, 20);
+        console.log('✅ Chat history loaded:', chatHistory.length);
+
+        // Transform chat history to Message format
+        const transformedMessages: Message[] = chatHistory.map((chat, index) => [
+          {
+            id: `user-${chat.timestamp}-${index}`,
+            text: chat.message,
+            sender: 'user' as const
+          },
+          chat.response ? {
+            id: `ai-${chat.timestamp}-${index}`,
+            text: chat.response,
+            sender: 'ai' as const
+          } : null
+        ]).flat().filter(Boolean) as Message[];
+
+        setMessages(transformedMessages);
+
+        // Load quick replies
+        const quickReplies = await AIService.getQuickReplies(currentUser.id);
         setSuggestions(quickReplies);
+
       } catch (error) {
-        console.error('Error loading quick replies:', error);
+        console.error('❌ Error loading chat data:', error);
         // Fallback to default suggestions
         setSuggestions(["Como proteger meus dados?", "O que é phishing?", "Dicas de senha segura", "Como funciona a IA?"]);
+        setMessages([]);
+      } finally {
+        setLoadingHistory(false);
       }
     };
 
-    if (visible) {
-      loadQuickReplies();
-    }
+    loadData();
   }, [visible]);
 
 
   const handleSendMessage = async (textToSend?: string) => {
     const currentText = textToSend || inputText;
     if (currentText.trim() === '' || isSending) return;
+
+    // Get current user
+    const currentUser = UserContext.getUser();
+    if (!currentUser) {
+      Alert.alert('Erro', 'Usuário não encontrado. Faça login novamente.');
+      return;
+    }
 
     const userMessage: Message = { id: Date.now().toString(), text: currentText, sender: 'user' };
     setMessages(prevMessages => [...prevMessages, userMessage]);
@@ -68,20 +112,32 @@ export default function AIChatScreen({ visible, onClose }: AIChatScreenProps) {
     setIsSending(true);
 
     try {
-      // For now, we'll use a placeholder user ID. In a real app, this would come from authentication
-      const userId = 'user_123';
-      const aiText = await AIService.sendMessage(userId, userMessage.text);
+      const aiText = await AIService.sendMessage(currentUser.id, userMessage.text);
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         text: aiText,
         sender: 'ai',
       };
       setMessages(prevMessages => [...prevMessages, aiMessage]);
+
+      // Save conversation to database
+      try {
+        await SupabaseService.saveChatMessage(currentUser.id, {
+          message: userMessage.text,
+          response: aiText,
+          timestamp: new Date()
+        });
+        console.log('✅ Chat message saved to database');
+      } catch (saveError) {
+        console.error('❌ Error saving chat message:', saveError);
+        // Don't show error to user, just log it
+      }
+
     } catch (error) {
       console.error("Error processing AI message:", error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: "Sorry, I couldn't process that. Please try again.",
+        text: "Desculpe, não consegui processar isso. Tente novamente.",
         sender: 'ai',
       };
       setMessages(prevMessages => [...prevMessages, errorMessage]);
@@ -94,6 +150,12 @@ export default function AIChatScreen({ visible, onClose }: AIChatScreenProps) {
     setInputText(suggestion);
     // Optionally, send the suggestion directly
     // handleSendMessage(suggestion);
+  };
+
+  // Clear messages when modal closes
+  const handleClose = () => {
+    setMessages([]);
+    onClose();
   };
 
 
@@ -115,26 +177,37 @@ export default function AIChatScreen({ visible, onClose }: AIChatScreenProps) {
         <View style={styles.modalContent}>
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Pergunte à IA</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
               {/* Using a simple text 'X' for now, replace with an icon if available */}
               <Text style={styles.closeButtonText}>X</Text>
             </TouchableOpacity>
           </View>
 
-          <FlatList
-            data={messages}
-            renderItem={({ item }) => (
-              <View style={[styles.messageBubble, item.sender === 'user' ? styles.userMessage : styles.aiMessage]}>
-                <Text style={item.sender === 'user' ? styles.userMessageText : styles.aiMessageText}>
-                  {item.text}
-                </Text>
-              </View>
-            )}
-            keyExtractor={item => item.id}
-            style={styles.messagesContainer}
-            contentContainerStyle={styles.messagesContentContainer}
-            // Removed inverted prop to show messages in normal order (newest at bottom)
-          />
+          {loadingHistory ? (
+            <View style={styles.loadingContainer}>
+              <Text style={styles.loadingText}>Carregando histórico...</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={messages}
+              renderItem={({ item }) => (
+                <View style={[styles.messageBubble, item.sender === 'user' ? styles.userMessage : styles.aiMessage]}>
+                  <Text style={item.sender === 'user' ? styles.userMessageText : styles.aiMessageText}>
+                    {item.text}
+                  </Text>
+                </View>
+              )}
+              keyExtractor={item => item.id}
+              style={styles.messagesContainer}
+              contentContainerStyle={styles.messagesContentContainer}
+              ListEmptyComponent={
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyText}>Nenhuma conversa ainda. Comece perguntando algo!</Text>
+                </View>
+              }
+              // Removed inverted prop to show messages in normal order (newest at bottom)
+            />
+          )}
 
           {/* Suggestions */}
           <View style={styles.suggestionsOuterContainer}>
@@ -320,5 +393,27 @@ const styles = StyleSheet.create({
   iconText: { // For placeholder icons
     fontSize: 20,
     color: '#FFFFFF', // White for send button
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#64748B',
+    fontStyle: 'italic',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#64748B',
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
 });

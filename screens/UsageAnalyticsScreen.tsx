@@ -4,15 +4,40 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LineChart, BarChart } from 'react-native-chart-kit';
-import { UsageDataService, AppUsageData, UsageStats } from '../services/UsageDataService';
+import { SupabaseService } from '../services/SupabaseService';
+import { UserContext } from '../services/UserContext';
 
 const screenWidth = Dimensions.get('window').width;
 
+interface UserActivity {
+   id: string;
+   activity_type: string;
+   description: string;
+   created_at: string;
+   metadata?: any;
+}
+
+interface UsageStats {
+   totalScreenTime: number;
+   averageDaily: number;
+   productiveTime: number;
+   distractingTime: number;
+}
+
+interface AppUsageData {
+   appName: string;
+   icon: string;
+   category: string;
+   todayMinutes: number;
+   yesterdayMinutes: number;
+   weeklyData: number[];
+}
+
 export default function UsageAnalyticsScreen() {
-  const insets = useSafeAreaInsets();
-  const [usageData, setUsageData] = useState<AppUsageData[]>([]);
-  const [stats, setStats] = useState<UsageStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+   const insets = useSafeAreaInsets();
+   const [usageData, setUsageData] = useState<AppUsageData[]>([]);
+   const [stats, setStats] = useState<UsageStats | null>(null);
+   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     loadData();
@@ -20,15 +45,185 @@ export default function UsageAnalyticsScreen() {
 
   const loadData = async () => {
     try {
-      const data = await UsageDataService.getUsageData();
-      const statistics = await UsageDataService.getUsageStats();
-      setUsageData(data);
+      console.log('📊 UsageAnalyticsScreen - Loading usage data...');
+
+      const currentUser = UserContext.getUser();
+      if (!currentUser) {
+        console.log('❌ No user found for usage analytics');
+        loadDemoData();
+        return;
+      }
+
+      console.log('✅ Found user:', currentUser.id);
+
+      // Load user activities from database
+      const activities = await SupabaseService.getUserActivities(currentUser.id, 50);
+      console.log('✅ User activities loaded:', activities.length);
+
+      // Process activities into usage data
+      const processedData = processActivitiesIntoUsageData(activities);
+      const statistics = calculateUsageStats(activities);
+
+      setUsageData(processedData);
       setStats(statistics);
+
     } catch (error) {
-      console.error('Error loading usage data:', error);
+      console.error('❌ Error loading usage data:', error);
+      loadDemoData();
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const processActivitiesIntoUsageData = (activities: UserActivity[]): AppUsageData[] => {
+    // Group activities by type and calculate usage times
+    const activityGroups: { [key: string]: UserActivity[] } = {};
+
+    activities.forEach(activity => {
+      if (!activityGroups[activity.activity_type]) {
+        activityGroups[activity.activity_type] = [];
+      }
+      activityGroups[activity.activity_type].push(activity);
+    });
+
+    // Convert to AppUsageData format
+    return Object.entries(activityGroups).slice(0, 5).map(([type, activities]) => {
+      const todayActivities = activities.filter(a =>
+        new Date(a.created_at).toDateString() === new Date().toDateString()
+      );
+      const yesterdayActivities = activities.filter(a =>
+        new Date(a.created_at).toDateString() === new Date(Date.now() - 86400000).toDateString()
+      );
+
+      const todayMinutes = todayActivities.reduce((sum, a) => sum + (a.metadata?.duration || 5), 0);
+      const yesterdayMinutes = yesterdayActivities.reduce((sum, a) => sum + (a.metadata?.duration || 5), 0);
+
+      return {
+        appName: getActivityDisplayName(type),
+        icon: getActivityIcon(type),
+        category: getActivityCategory(type),
+        todayMinutes,
+        yesterdayMinutes,
+        weeklyData: generateWeeklyData(activities)
+      };
+    });
+  };
+
+  const calculateUsageStats = (activities: UserActivity[]): UsageStats => {
+    const today = new Date();
+    const todayActivities = activities.filter(a =>
+      new Date(a.created_at).toDateString() === today.toDateString()
+    );
+
+    const totalScreenTime = todayActivities.reduce((sum, a) => sum + (a.metadata?.duration || 5), 0);
+
+    // Calculate average from last 7 days
+    const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const weeklyActivities = activities.filter(a => new Date(a.created_at) >= weekAgo);
+    const averageDaily = weeklyActivities.length > 0 ?
+      weeklyActivities.reduce((sum, a) => sum + (a.metadata?.duration || 5), 0) / 7 : 0;
+
+    // Categorize time (simplified logic)
+    const productiveTime = todayActivities
+      .filter(a => ['goal_achieved', 'mood_improvement'].includes(a.activity_type))
+      .reduce((sum, a) => sum + (a.metadata?.duration || 5), 0);
+
+    const distractingTime = todayActivities
+      .filter(a => ['alert'].includes(a.activity_type))
+      .reduce((sum, a) => sum + (a.metadata?.duration || 5), 0);
+
+    return {
+      totalScreenTime,
+      averageDaily,
+      productiveTime,
+      distractingTime
+    };
+  };
+
+  const getActivityDisplayName = (type: string): string => {
+    const names: { [key: string]: string } = {
+      'alert': 'Alertas',
+      'mood_improvement': 'Bem-estar',
+      'goal_achieved': 'Metas',
+      'crisis_avoided': 'Prevenção',
+      'default': 'Atividades'
+    };
+    return names[type] || names.default;
+  };
+
+  const getActivityIcon = (type: string): string => {
+    const icons: { [key: string]: string } = {
+      'alert': '⚠️',
+      'mood_improvement': '😊',
+      'goal_achieved': '🎯',
+      'crisis_avoided': '🛡️',
+      'default': '📱'
+    };
+    return icons[type] || icons.default;
+  };
+
+  const getActivityCategory = (type: string): string => {
+    const categories: { [key: string]: string } = {
+      'alert': 'segurança',
+      'mood_improvement': 'bem-estar',
+      'goal_achieved': 'produtividade',
+      'crisis_avoided': 'segurança',
+      'default': 'geral'
+    };
+    return categories[type] || categories.default;
+  };
+
+  const generateWeeklyData = (activities: UserActivity[]): number[] => {
+    const weeklyData = [0, 0, 0, 0, 0, 0, 0]; // Sun, Mon, Tue, Wed, Thu, Fri, Sat
+
+    activities.forEach(activity => {
+      const date = new Date(activity.created_at);
+      const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      weeklyData[dayOfWeek] += activity.metadata?.duration || 5;
+    });
+
+    return weeklyData;
+  };
+
+  const loadDemoData = () => {
+    console.log('📋 Loading demo usage data...');
+
+    const demoData: AppUsageData[] = [
+      {
+        appName: 'Alertas',
+        icon: '⚠️',
+        category: 'segurança',
+        todayMinutes: 45,
+        yesterdayMinutes: 30,
+        weeklyData: [20, 35, 40, 25, 45, 50, 30]
+      },
+      {
+        appName: 'Bem-estar',
+        icon: '😊',
+        category: 'bem-estar',
+        todayMinutes: 30,
+        yesterdayMinutes: 25,
+        weeklyData: [15, 20, 25, 30, 35, 30, 25]
+      },
+      {
+        appName: 'Metas',
+        icon: '🎯',
+        category: 'produtividade',
+        todayMinutes: 25,
+        yesterdayMinutes: 40,
+        weeklyData: [10, 15, 20, 25, 30, 35, 25]
+      }
+    ];
+
+    const demoStats: UsageStats = {
+      totalScreenTime: 100,
+      averageDaily: 85,
+      productiveTime: 55,
+      distractingTime: 25
+    };
+
+    setUsageData(demoData);
+    setStats(demoStats);
   };
 
   const formatTime = (minutes: number): string => {
@@ -47,7 +242,7 @@ export default function UsageAnalyticsScreen() {
   };
 
   const topAppsData = {
-    labels: usageData.slice(0, 5).map(app => app.appName),
+    labels: usageData.slice(0, 5).map(app => app.appName.substring(0, 8)), // Truncate long names
     datasets: [{
       data: usageData.slice(0, 5).map(app => app.todayMinutes),
     }]
@@ -151,14 +346,16 @@ export default function UsageAnalyticsScreen() {
           </Text>
           <View style={styles.chartContainer}>
             <BarChart
-              data={topAppsData}
-              width={screenWidth - 48}
-              height={220}
-              chartConfig={chartConfig}
-              style={styles.chart}
-              showValuesOnTopOfBars
-              fromZero
-            />
+               data={topAppsData}
+               width={screenWidth - 48}
+               height={220}
+               chartConfig={chartConfig}
+               style={styles.chart}
+               showValuesOnTopOfBars
+               fromZero
+               yAxisLabel=""
+               yAxisSuffix="min"
+             />
           </View>
         </View>
 
