@@ -64,16 +64,19 @@ export default function CirclesScreen() {
   const loadUserCircles = async () => {
     const userId = UserContext.getUserId();
     if (!userId) {
-      console.log('No user logged in');
+      console.log('❌ No user logged in');
       return;
     }
 
+    console.log('✅ Loading circles for user ID:', userId);
     setLoading(true);
     try {
       const userCircles = await CirclesService.getUserCircles(userId);
+      console.log('✅ Loaded circles:', userCircles.length, 'circles found');
+      console.log('✅ Circle data:', userCircles);
       setCircles(userCircles);
     } catch (error) {
-      console.error('Error loading circles:', error);
+      console.error('❌ Error loading circles:', error);
       Alert.alert('Erro', 'Não foi possível carregar seus círculos');
     } finally {
       setLoading(false);

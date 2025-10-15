@@ -109,6 +109,12 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
 
   // Check face registration status on component mount
   useEffect(() => {
+    // Debug: Log user data
+    const user = UserContext.getUser();
+    const displayName = UserContext.getDisplayName();
+    console.log('👤 ProfileScreen - User data:', user);
+    console.log('👤 ProfileScreen - Display name:', displayName);
+
     const checkFaceRegistration = async () => {
       try {
         const status = await FaceRecognitionService.getFaceRegistrationStatus(userId);

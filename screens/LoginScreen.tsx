@@ -232,12 +232,17 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
     
     // Fetch user profile from Supabase
     try {
+      console.log('Fetching user profile for email:', email);
       const userProfile = await UserContext.fetchUserByEmail(email);
       if (userProfile) {
-        console.log('User profile loaded:', userProfile.full_name);
+        console.log('✅ User profile loaded:', userProfile.full_name);
+        console.log('✅ User ID:', userProfile.id);
+        console.log('✅ Wellness score:', userProfile.wellness_score);
+      } else {
+        console.log('❌ No user profile found for email:', email);
       }
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+      console.error('❌ Error fetching user profile:', error);
     }
     
     navigation.navigate('QuizIntro');

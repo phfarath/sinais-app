@@ -1,9 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../config/env';
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
-const supabaseKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
-
-export const supabase = createClient(supabaseUrl, supabaseKey);
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export interface UserProfile {
   id: string;
@@ -74,26 +72,182 @@ export class UserContext {
    */
   static async fetchUserByEmail(email: string): Promise<UserProfile | null> {
     try {
+      // First, test if Supabase connection works at all
+      console.log('🔍 Testing Supabase connection...');
+      const { data: testData, error: testError } = await supabase
+        .from('user_profiles')
+        .select('count')
+        .limit(1);
+      
+      if (testError) {
+        console.error('❌ Supabase connection test failed:', testError);
+        console.error('❌ Error details:', JSON.stringify(testError, null, 2));
+        return null;
+      }
+      
+      console.log('✅ Supabase connection test passed');
+      
+      // Now try to fetch the specific user
+      console.log('🔍 Fetching user profile for email:', email);
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('email', email)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single to handle 0 rows
 
       if (error) {
-        console.error('Error fetching user by email:', error);
+        console.error('❌ Error fetching user by email:', error);
+        console.error('❌ Error details:', JSON.stringify(error, null, 2));
+        
+        // Try a different approach - list all users to see if we have access
+        console.log('🔍 Trying to list all users...');
+        const { data: allUsers, error: allUsersError } = await supabase
+          .from('user_profiles')
+          .select('email, full_name')
+          .limit(5);
+          
+        if (allUsersError) {
+          console.error('❌ Cannot list users either:', allUsersError);
+        } else {
+          console.log('✅ Found users in database:', allUsers);
+        }
+        
         return null;
       }
 
       if (data) {
         this.setUser(data as UserProfile);
+        console.log('✅ Found existing user profile:', data.full_name);
+        return data as UserProfile;
+      }
+
+      // If no user found, create a demo profile
+      console.log('⚠️ No user profile found, creating demo profile for:', email);
+      const demoProfile = await this.createDemoUserProfile(email);
+      return demoProfile;
+    } catch (error) {
+      console.error('Error in fetchUserByEmail:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Create a demo user profile for testing
+   */
+  static async createDemoUserProfile(email: string): Promise<UserProfile | null> {
+    try {
+      const demoNames = {
+        'demo1@fiap.com': 'Pedro Silva',
+        'demo2@fiap.com': 'Ana Santos',
+        'demo3@fiap.com': 'Carlos Oliveira',
+        'demo4@fiap.com': 'Maria Costa',
+        'demo5@fiap.com': 'João Pereira'
+      };
+
+      const fullName = demoNames[email as keyof typeof demoNames] || email.split('@')[0];
+      const wellnessScore = Math.floor(Math.random() * 30) + 70; // 70-100
+      const wellnessTrend = ['improving', 'stable', 'declining'][Math.floor(Math.random() * 3)];
+      
+      console.log('🔍 Creating demo user profile:', { email, fullName, wellnessScore, wellnessTrend });
+      
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .insert({
+          email,
+          full_name: fullName,
+          wellness_score: wellnessScore,
+          wellness_trend: wellnessTrend
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('❌ Error creating demo user profile:', error);
+        console.error('❌ Error details:', JSON.stringify(error, null, 2));
+        console.error('❌ Error code:', error.code);
+        console.error('❌ Error message:', error.message);
+        console.error('❌ Error hint:', error.hint);
+        
+        // Try without .single() to see if the insert worked but just failed to return
+        console.log('🔍 Trying insert without .single()...');
+        const { data: insertData, error: insertError } = await supabase
+          .from('user_profiles')
+          .insert({
+            email,
+            full_name: fullName,
+            wellness_score: wellnessScore,
+            wellness_trend: wellnessTrend
+          })
+          .select();
+          
+        if (insertError) {
+          console.error('❌ Insert also failed:', insertError);
+        } else {
+          console.log('✅ Insert worked, data:', insertData);
+        }
+        
+        return null;
+      }
+
+      if (data) {
+        this.setUser(data as UserProfile);
+        console.log('✅ Created demo user profile:', data.full_name);
+        
+        // Create demo circles for this user
+        await this.createDemoCircles(data.id, email);
+        
         return data as UserProfile;
       }
 
       return null;
     } catch (error) {
-      console.error('Error in fetchUserByEmail:', error);
+      console.error('Error in createDemoUserProfile:', error);
       return null;
+    }
+  }
+
+  /**
+   * Create demo circles for a new user
+   */
+  static async createDemoCircles(userId: string, email: string): Promise<void> {
+    try {
+      // Import CirclesService here to avoid circular dependency
+      const { CirclesService } = await import('./CirclesService');
+      
+      // Create "Família Silva" circle for demo1
+      if (email === 'demo1@fiap.com') {
+        await CirclesService.createCircle(
+          userId,
+          'Família Silva',
+          'family',
+          'Círculo familiar para apoio mútuo'
+        );
+        console.log('✅ Created demo circle: Família Silva');
+      }
+      
+      // Create "Accountability Friends" circle for demo1
+      if (email === 'demo1@fiap.com') {
+        await CirclesService.createCircle(
+          userId,
+          'Accountability Friends',
+          'duo',
+          'Parceria de responsabilidade e apoio'
+        );
+        console.log('✅ Created demo circle: Accountability Friends');
+      }
+      
+      // Create other demo circles for other users
+      if (email === 'demo2@fiap.com') {
+        await CirclesService.createCircle(
+          userId,
+          'Accountability Friends',
+          'duo',
+          'Parceria de responsabilidade e apoio'
+        );
+        console.log('✅ Created demo circle: Accountability Friends for Ana');
+      }
+    } catch (error) {
+      console.error('Error creating demo circles:', error);
     }
   }
 

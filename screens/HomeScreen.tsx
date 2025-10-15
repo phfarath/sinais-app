@@ -6,7 +6,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList } from '../App';
 import { FontAwesome } from '@expo/vector-icons';
 import AIChatScreen from './AIChatScreen';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { UserContext } from '../services/UserContext';
 
 type HomeScreenProps = {
@@ -39,6 +39,14 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
   const insets = useSafeAreaInsets();
   const [riskProfile, setRiskProfile] = useState(route.params?.riskProfile || 'Moderado');
   const [isAIChatVisible, setIsAIChatVisible] = useState(false);
+
+  // Debug: Log user data on component mount
+  useEffect(() => {
+    const user = UserContext.getUser();
+    const displayName = UserContext.getDisplayName();
+    console.log('🏠 HomeScreen - User data:', user);
+    console.log('🏠 HomeScreen - Display name:', displayName);
+  }, []);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -91,34 +99,6 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
           <Text style={styles.predictionTitle}>Previsão para esta semana</Text>
           <Text style={styles.predictionDescription}>
             Com base no seu histórico, sua tendência para esta semana é de risco médio crescente.
-          </Text>
-        </LinearGradient>
-
-        {/* Demonstração de Cybersecurity */}
-        <LinearGradient
-          colors={['#F0FDF4', '#ECFDF5']}
-          style={styles.predictionCard}
-        >
-          <View style={styles.predictionHeader}>
-            <MaterialCommunityIcons 
-              name="security" 
-              size={32} 
-              color="#059669" 
-            />
-            <Text style={[styles.predictionBadge, { color: '#059669' }]}>
-              <MaterialCommunityIcons name="shield-check" size={12} color="#059669" />
-              {` Protegido`} {/* MODIFICADO AQUI */}
-            </Text>
-          </View>
-          <Text style={[styles.predictionTitle, { color: '#059669' }]}>
-            Cybersecurity Ativo
-          </Text>
-          <Text style={[styles.predictionDescription, { color: '#065F46' }]}>
-            🔐 Criptografia AES protegendo seus dados{'\n'}
-            📝 Auditoria completa registrando todas as ações{'\n'}
-            🤖 IA explicável tomando decisões transparentes{'\n'}
-            ⚖️ Análise de viés garantindo equidade{'\n'}
-            🛡️ MFA protegendo seu acesso
           </Text>
         </LinearGradient>
 
