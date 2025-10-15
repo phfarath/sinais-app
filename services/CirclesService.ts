@@ -70,7 +70,7 @@ export class CirclesService {
 
       // Fetch members for each circle
       const circlesWithMembers: CircleWithMembers[] = [];
-      
+
       for (const circle of circles || []) {
         const members = await this.getCircleMembers(circle.id);
         circlesWithMembers.push({
@@ -92,23 +92,54 @@ export class CirclesService {
    */
   static async getCircleMembers(circleId: string): Promise<CircleMember[]> {
     try {
-      const { data: members, error } = await supabase
+      console.log('🔍 Fetching circle members for circle:', circleId);
+
+      // Step 1: Get circle members (without user profile join)
+      const { data: members, error: membersError } = await supabase
         .from('circle_members')
-        .select(`
-          *,
-          user_profile:user_profiles(id, full_name, email, wellness_score, wellness_trend)
-        `)
+        .select('*')
         .eq('circle_id', circleId)
         .eq('acceptance_status', 'accepted');
 
-      if (error) {
-        console.error('Error fetching circle members:', error);
+      if (membersError) {
+        console.error('❌ Error fetching circle members:', membersError);
         return [];
       }
 
-      return members || [];
+      if (!members || members.length === 0) {
+        console.log('✅ No members found for this circle');
+        return [];
+      }
+
+      console.log('✅ Found circle members:', members.length);
+
+      // Step 2: Get user profiles for each member (manual join)
+      const userIds = members.map(m => m.user_id);
+      const { data: userProfiles, error: profilesError } = await supabase
+        .from('user_profiles')
+        .select('id, full_name, email, wellness_score, wellness_trend')
+        .in('id', userIds);
+
+      if (profilesError) {
+        console.error('❌ Error fetching user profiles:', profilesError);
+        return [];
+      }
+
+      console.log('✅ Found user profiles:', userProfiles?.length);
+
+      // Step 3: Combine data (manual join)
+      const membersWithProfiles = members.map(member => {
+        const userProfile = userProfiles?.find(profile => profile.id === member.user_id);
+        return {
+          ...member,
+          user_profile: userProfile
+        };
+      });
+
+      console.log('✅ Combined members with profiles:', membersWithProfiles.length);
+      return membersWithProfiles;
     } catch (error) {
-      console.error('Error in getCircleMembers:', error);
+      console.error('❌ Error in getCircleMembers:', error);
       return [];
     }
   }

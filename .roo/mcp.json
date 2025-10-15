@@ -14,7 +14,8 @@
       },
       "alwaysAllow": [
         "list_tables",
-        "apply_migration"
+        "apply_migration",
+        "execute_sql"
       ]
     }
   }

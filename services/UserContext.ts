@@ -92,8 +92,10 @@ export class UserContext {
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
-        .eq('email', email)
+        .eq('email', email.toLowerCase().trim()) // Normalize email
         .maybeSingle(); // Use maybeSingle instead of single to handle 0 rows
+
+      console.log('🔍 Query result:', { data, error });
 
       if (error) {
         console.error('❌ Error fetching user by email:', error);
@@ -211,43 +213,64 @@ export class UserContext {
    */
   static async createDemoCircles(userId: string, email: string): Promise<void> {
     try {
+      console.log('🔍 Creating demo circles for user:', userId, email);
+      
       // Import CirclesService here to avoid circular dependency
       const { CirclesService } = await import('./CirclesService');
       
       // Create "Família Silva" circle for demo1
       if (email === 'demo1@fiap.com') {
-        await CirclesService.createCircle(
+        console.log('🔍 Creating Família Silva circle...');
+        const result1 = await CirclesService.createCircle(
           userId,
           'Família Silva',
           'family',
           'Círculo familiar para apoio mútuo'
         );
-        console.log('✅ Created demo circle: Família Silva');
+        if (result1.success) {
+          console.log('✅ Created demo circle: Família Silva');
+          console.log('🔍 Circle ID:', result1.circle?.id);
+        } else {
+          console.error('❌ Failed to create Família Silva circle:', result1.error);
+        }
       }
       
       // Create "Accountability Friends" circle for demo1
       if (email === 'demo1@fiap.com') {
-        await CirclesService.createCircle(
+        console.log('🔍 Creating Accountability Friends circle...');
+        const result2 = await CirclesService.createCircle(
           userId,
           'Accountability Friends',
           'duo',
           'Parceria de responsabilidade e apoio'
         );
-        console.log('✅ Created demo circle: Accountability Friends');
+        if (result2.success) {
+          console.log('✅ Created demo circle: Accountability Friends');
+          console.log('🔍 Circle ID:', result2.circle?.id);
+        } else {
+          console.error('❌ Failed to create Accountability Friends circle:', result2.error);
+        }
       }
       
       // Create other demo circles for other users
       if (email === 'demo2@fiap.com') {
-        await CirclesService.createCircle(
+        console.log('🔍 Creating Accountability Friends circle for Ana...');
+        const result3 = await CirclesService.createCircle(
           userId,
           'Accountability Friends',
           'duo',
           'Parceria de responsabilidade e apoio'
         );
-        console.log('✅ Created demo circle: Accountability Friends for Ana');
+        if (result3.success) {
+          console.log('✅ Created demo circle: Accountability Friends for Ana');
+        } else {
+          console.error('❌ Failed to create circle for Ana:', result3.error);
+        }
       }
+      
+      console.log('✅ Demo circles creation process completed');
     } catch (error) {
-      console.error('Error creating demo circles:', error);
+      console.error('❌ Error creating demo circles:', error);
     }
   }
 
