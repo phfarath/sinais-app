@@ -45,6 +45,7 @@ import UsageAnalyticsScreen from "./screens/UsageAnalyticsScreen";
 import FocusModeScreen from "./screens/FocusModeScreen";
 import EmergencyModeScreen from "./screens/EmergencyModeScreen";
 import GamificationScreen from "./screens/GamificationScreen";
+import DashboardScreen from './screens/DashboardScreen';
 
 // Tipos de Navegação
 export type RootStackParamList = {
@@ -85,6 +86,7 @@ export type MonitoringStackParamList = {
   Monitoring: undefined;
   Breathing: undefined;
   Statistics: undefined;
+  Dashboards: undefined;
 };
 
 export type LearnStackParamList = {
@@ -151,6 +153,7 @@ function MonitoringStackScreen() {
       <MonitoringStack.Screen name="Monitoring" component={MonitoringScreen} options={{ title: 'Monitoramento' }} />
       <MonitoringStack.Screen name="Breathing" component={BreathingScreen} options={{ title: 'Respiração' }} />
       <MonitoringStack.Screen name="Statistics" component={StatisticsScreen} options={{ title: 'Estatísticas' }} />
+      <MonitoringStack.Screen name="Dashboards" component={DashboardScreen} options={{ title: 'Dashboard' }} />
     </MonitoringStack.Navigator>
   );
 }

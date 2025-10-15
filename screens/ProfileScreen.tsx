@@ -6,6 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useState, useEffect } from 'react';
 import { FaceRecognitionService } from '../services/FaceRecognitionService';
 import { UserContext } from '../services/UserContext';
+import { SupabaseService } from '../services/SupabaseService';
 
 type RootStackParamList = {
   Profile: undefined;
@@ -26,6 +27,20 @@ type RootStackParamList = {
 type ProfileScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Profile'>;
 };
+
+interface RiskAssessment {
+  id: string;
+  risk_level: string;
+  score: number;
+  assessment_type: string;
+  created_at: string;
+  notes?: string;
+}
+
+interface WellnessScoreData {
+  week: string;
+  score: number;
+}
 
 interface Styles {
   container: ViewStyle;
@@ -59,8 +74,8 @@ interface Styles {
   scoreValue: TextStyle;
 }
 
-// Mock data for the score graph
-const scoreData = [
+// Mock data for the score graph (will be replaced with real data)
+const mockScoreData = [
   { week: 'Sem 1', score: 65 },
   { week: 'Sem 2', score: 72 },
   { week: 'Sem 3', score: 58 },
@@ -68,14 +83,18 @@ const scoreData = [
 ];
 
 export default function ProfileScreen({ navigation }: ProfileScreenProps) {
-  const insets = useSafeAreaInsets();
-  // Current risk level state (low, medium, high)
-  const [riskLevel, setRiskLevel] = useState<'low' | 'medium' | 'high'>('medium');
-  
-  // Face recognition states
-  const [faceRecognitionEnabled, setFaceRecognitionEnabled] = useState(false);
-  const [faceRegistered, setFaceRegistered] = useState(false);
-  const [userId] = useState('user_' + Date.now()); // Mock user ID
+   const insets = useSafeAreaInsets();
+   // Current risk level state (low, medium, high)
+   const [riskLevel, setRiskLevel] = useState<'low' | 'medium' | 'high'>('medium');
+
+   // Face recognition states
+   const [faceRecognitionEnabled, setFaceRecognitionEnabled] = useState(false);
+   const [faceRegistered, setFaceRegistered] = useState(false);
+   const [userId] = useState('user_' + Date.now()); // Mock user ID
+
+   // Wellness score history states
+   const [wellnessScoreData, setWellnessScoreData] = useState<WellnessScoreData[]>(mockScoreData);
+   const [loadingWellnessData, setLoadingWellnessData] = useState(true);
 
   // Function to get color based on risk level
   const getRiskColor = () => {
@@ -124,9 +143,57 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
         console.error('Error checking face registration status:', error);
       }
     };
-    
+
     checkFaceRegistration();
   }, [userId]);
+
+  // Load wellness score history on component mount
+  useEffect(() => {
+    loadWellnessScoreHistory();
+  }, []);
+
+  const loadWellnessScoreHistory = async () => {
+    try {
+      console.log('📊 ProfileScreen - Loading wellness score history...');
+
+      const currentUser = UserContext.getUser();
+      if (!currentUser) {
+        console.log('❌ No user found in UserContext');
+        setLoadingWellnessData(false);
+        return;
+      }
+
+      console.log('✅ Found user:', currentUser.id);
+
+      // Load risk assessments to get historical scores
+      const riskAssessments = await SupabaseService.getRiskAssessments(currentUser.id, 4); // Get last 4 assessments
+      console.log('✅ Risk assessments loaded:', riskAssessments.length);
+
+      if (riskAssessments.length > 0) {
+        // Transform risk assessments into wellness score data
+        const transformedData = riskAssessments
+          .slice(0, 4) // Take only the last 4 assessments
+          .reverse() // Reverse to show chronological order (oldest first)
+          .map((assessment, index) => ({
+            week: `Sem ${index + 1}`,
+            score: assessment.score
+          }));
+
+        setWellnessScoreData(transformedData);
+      } else {
+        // Use demo data if no assessments found
+        console.log('📋 Using demo wellness score data');
+        setWellnessScoreData(mockScoreData);
+      }
+
+    } catch (error) {
+      console.error('❌ Error loading wellness score history:', error);
+      // Use demo data as fallback
+      setWellnessScoreData(mockScoreData);
+    } finally {
+      setLoadingWellnessData(false);
+    }
+  };
 
   const handleFaceRecognitionToggle = async (value: boolean) => {
     if (!faceRegistered && value) {
@@ -226,16 +293,16 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
             </View>
             
             <View style={styles.graphContainer}>
-              {scoreData.map((item, index) => (
+              {wellnessScoreData.map((item: WellnessScoreData, index: number) => (
                 <View key={`score-${index}-${item.week}`} style={styles.graphBar}>
-                  <View 
+                  <View
                     style={[
-                      styles.barFill, 
-                      { 
+                      styles.barFill,
+                      {
                         height: `${item.score}%`,
                         backgroundColor: item.score > 70 ? '#EF4444' : item.score > 50 ? '#F59E0B' : '#10B981'
                       }
-                    ]} 
+                    ]}
                   />
                   <Text style={styles.barValue}>{String(item.score)}</Text>
                   <Text style={styles.weekLabel}>{String(item.week)}</Text>

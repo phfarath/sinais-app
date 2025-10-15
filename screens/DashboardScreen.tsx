@@ -4,6 +4,9 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useState, useEffect } from 'react';
+import { SupabaseService } from '../services/SupabaseService';
+import { UserContext } from '../services/UserContext';
 
 type RootStackParamList = {
   Alert: undefined;
@@ -47,11 +50,94 @@ interface Styles {
   predictionDescription: TextStyle;
   alertButton: ViewStyle;
   alertButtonText: TextStyle;
+  loadingContainer: ViewStyle;
+  loadingText: TextStyle;
 }
 
 export default function DashboardScreen({ navigation, route }: DashboardScreenProps) {
   const insets = useSafeAreaInsets();
-  const riskProfile = route.params?.riskProfile || 'Moderado';
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [riskProfile, setRiskProfile] = useState('Moderado');
+  const [wellnessScore, setWellnessScore] = useState(75);
+  const [recentActivities, setRecentActivities] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Load user data on component mount
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const loadUserData = async () => {
+    try {
+      console.log('📊 DashboardScreen - Loading user data...');
+      
+      // Get current user from UserContext
+      const currentUser = UserContext.getUser();
+      if (!currentUser) {
+        console.log('❌ No user found in UserContext');
+        setLoading(false);
+        return;
+      }
+
+      console.log('✅ Found user:', currentUser.id);
+
+      // Load user profile
+      const profile = await SupabaseService.getUserProfile(currentUser.id);
+      if (profile) {
+        console.log('✅ User profile loaded:', profile.full_name);
+        setUserProfile(profile);
+        setWellnessScore(profile.wellness_score || 75);
+      }
+
+      // Load recent risk assessments
+      const riskAssessments = await SupabaseService.getRiskAssessments(currentUser.id, 1);
+      if (riskAssessments.length > 0) {
+        const latestAssessment = riskAssessments[0];
+        console.log('✅ Risk assessment loaded:', latestAssessment.risk_level);
+        setRiskProfile(latestAssessment.risk_level || 'Moderado');
+      }
+
+      // Load recent activities
+      const activities = await SupabaseService.getUserActivities(currentUser.id, 5);
+      console.log('✅ Recent activities loaded:', activities.length);
+      setRecentActivities(activities);
+
+    } catch (error) {
+      console.error('❌ Error loading user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getDisplayName = () => {
+    if (userProfile?.full_name) {
+      return userProfile.full_name.split(' ')[0]; // First name only
+    }
+    return 'Visitante';
+  };
+
+  const getWellnessTrendIcon = () => {
+    if (userProfile?.wellness_trend === 'improving') return 'trending-up';
+    if (userProfile?.wellness_trend === 'declining') return 'trending-down';
+    return 'trending-neutral';
+  };
+
+  const getWellnessTrendText = () => {
+    if (userProfile?.wellness_trend === 'improving') return 'Melhorando';
+    if (userProfile?.wellness_trend === 'declining') return 'Atenção';
+    return 'Estável';
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <View style={styles.loadingContainer}>
+          <MaterialCommunityIcons name="loading" size={48} color="#4A90E2" />
+          <Text style={styles.loadingText}>Carregando...</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -60,12 +146,12 @@ export default function DashboardScreen({ navigation, route }: DashboardScreenPr
           colors={['#FFFFFF', '#F8FAFC']}
           style={styles.header}
         >
-          <Text style={styles.welcome}>Olá, Visitante</Text>
+          <Text style={styles.welcome}>Olá, {getDisplayName()}</Text>
           <Text style={styles.date}>
-            {new Date().toLocaleDateString('pt-BR', { 
-              weekday: 'long', 
-              day: 'numeric', 
-              month: 'long' 
+            {new Date().toLocaleDateString('pt-BR', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long'
             })}
           </Text>
         </LinearGradient>
@@ -74,10 +160,10 @@ export default function DashboardScreen({ navigation, route }: DashboardScreenPr
           colors={['#FFFFFF', '#F0F7FF']}
           style={styles.riskCard}
         >
-          <MaterialCommunityIcons 
-            name="shield-alert-outline" 
-            size={32} 
-            color="#4A90E2" 
+          <MaterialCommunityIcons
+            name="shield-alert-outline"
+            size={32}
+            color="#4A90E2"
           />
           <Text style={styles.riskTitle}>Seu perfil atual</Text>
           <Text style={styles.riskLevel}>{riskProfile}</Text>
@@ -91,21 +177,21 @@ export default function DashboardScreen({ navigation, route }: DashboardScreenPr
           style={styles.predictionCard}
         >
           <View style={styles.predictionHeader}>
-            <MaterialCommunityIcons 
-              name="trending-up" 
-              size={32} 
-              color="#F59E0B" 
+            <MaterialCommunityIcons
+              name={getWellnessTrendIcon()}
+              size={32}
+              color="#F59E0B"
             />
             <Text style={styles.predictionBadge}>
               <MaterialCommunityIcons name="triangle" size={12} color="#F59E0B" />
-              {` Tendência Crescente`} {/* MODIFICADO AQUI */}
+              {` ${getWellnessTrendText()}`}
             </Text>
           </View>
-          <Text style={styles.predictionTitle}>Previsão para esta semana</Text>
+          <Text style={styles.predictionTitle}>Seu Score de Bem-Estar</Text>
           <Text style={styles.predictionDescription}>
-            Com base no seu histórico, sua tendência para esta semana é de risco médio crescente.
+            Seu score atual é {wellnessScore}. {userProfile?.wellness_trend === 'improving' ? 'Continue assim!' : userProfile?.wellness_trend === 'declining' ? 'Fique atento aos sinais.' : 'Mantenha o equilíbrio.'}
           </Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.alertButton}
             onPress={() => navigation.navigate('Alert')}
           >
@@ -356,5 +442,17 @@ const styles = StyleSheet.create<Styles>({
     fontSize: 16,
     fontWeight: '600',
     marginRight: 8,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+  },
+  loadingText: {
+    fontSize: 18,
+    color: '#64748B',
+    marginTop: 16,
+    fontWeight: '500',
   },
 });

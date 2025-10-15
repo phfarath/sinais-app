@@ -15,7 +15,11 @@
       "alwaysAllow": [
         "list_tables",
         "apply_migration",
-        "execute_sql"
+        "execute_sql",
+        "get_logs",
+        "get_projects",
+        "get_advisors",
+        "search_docs"
       ]
     }
   }
