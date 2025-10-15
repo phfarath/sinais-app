@@ -153,7 +153,7 @@ function MonitoringStackScreen() {
       <MonitoringStack.Screen name="Monitoring" component={MonitoringScreen} options={{ title: 'Monitoramento' }} />
       <MonitoringStack.Screen name="Breathing" component={BreathingScreen} options={{ title: 'Respiração' }} />
       <MonitoringStack.Screen name="Statistics" component={StatisticsScreen} options={{ title: 'Estatísticas' }} />
-      <MonitoringStack.Screen name="Dashboards" component={DashboardScreen} options={{ title: 'Dashboard' }} />
+      <MonitoringStack.Screen name="Dashboards" component={DashboardScreen as any} options={{ title: 'Dashboard' }} />
     </MonitoringStack.Navigator>
   );
 }
